@@ -1,0 +1,7 @@
+src/.vs
+src/.workspace
+src/**/ARM
+src/**/x86
+src/java/.gradle
+src/java/app/build
+src/java/app/src/main/jniLibs/

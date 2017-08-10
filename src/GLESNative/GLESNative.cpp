@@ -1,4 +1,9 @@
 #include "GLESNative.h"
+#include "esgui/container.h"
+#include "esgui/label.h"
+#include "esgui/popup.h"
+#include "esgui/layout.h"
+#include "esgui/esgui.h"
 #include <string>
 #include <sstream>
 
@@ -57,13 +62,12 @@ void CheckGLError(std::string funcName)
 * Class constructor
 */
 GLESNative::GLESNative() 
-	: m_initDone(false), m_layout()
+	: m_initDone(false)
 {
 }
 
 GLESNative::~GLESNative()
 {
-	delete m_layout;
 }
 
 /**
@@ -73,66 +77,45 @@ void GLESNative::Init()
 {
 	m_initDone = true;
 	
+	container* page = new esgui::container();
+	
 	const char* colors[] = { "red", "blue", "green" };
-	for (size_t i = 0; i < m_labels.size(); ++i) {
-		m_labels[i]
-			.font({ "normal", 24 })
-			.color(colors[i])
-			.text_color("white")
-			.text("Pepik" + to_string(i));
+	label* labels[3];
+	for (size_t i = 0; i < 3; ++i) {
+		labels[i] = new label(page);
+		labels[i]->font({ "normal", 24 });
+		labels[i]->color(colors[i]);
+		labels[i]->text_color("white");
+		labels[i]->text("Pepik" + to_string(i));
+		if (!i) {
+			labels[i]->on_click([&]() {
+				m_pop->exec();
+			});
+		}
 		/*if (i)
 			m_labels[i].hide();*/
-		m_labels[i].rect({0, 0, 0.25*1000, 0.5*1000});
+		//labels[i]->rect({0, 0, 0.25*1000, 0.5*1000});
 	}
 	/*auto r = m_labels[0].min_size();
 	m_labels[0].rect({ 0, 0, r.x, r.y });*/
 
-	m_popup.items({ "prvni", "druha", "treti" });
-	//m_popup.visible(false);
+	m_pop = new popup(page);
+	m_pop->items({ "prvni", "druha", "treti" });
+	m_pop->on_popup([](int idx) {
+		int a = 5;
+	});	
 
-	m_layout = column(
-		item(m_labels[0], 0.5) |
-		row(stretch() | m_labels[1]) |
-		item(m_labels[2], 0.5)
-	);		
+	page->layout(column(
+		item(labels[0], 0.5) |
+		row(stretch() | labels[1]) |
+		item(labels[2], 0.5)
+	));		
 }
 
 void GLESNative::Render() 
 {
 	glClearColor(1.0f, 1.0f, 0.8f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	/*float v[] = { -1, -1, 1, 0, 0,
-				  1, 1, 1, 0, 0,
-				  -1, 1, 0, 1, 0,
-				  1, -1, 0, 1, 0,
-	};
-	
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(
-		0,                  // attribute 0. Must match the layout in the shader.
-		2,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		5*sizeof(float),    // stride
-		v					// array buffer offset
-	);
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(
-		1,                  // attribute 1. Must match the layout in the shader.
-		3,                  // size
-		GL_FLOAT,           // type
-		GL_FALSE,           // normalized?
-		5*sizeof(float),    // stride
-		v + 2				// array buffer offset
-	);
-	glDrawArrays(GL_LINES, 0, 4);
-	glDisableVertexAttribArray(0);
-	glDisableVertexAttribArray(1);
-
-	//CheckGLError("GLESNative::Render");*/
-
+	glClear(GL_COLOR_BUFFER_BIT);	
 	esgui::app::get().render();
 }
 
@@ -144,7 +127,22 @@ void GLESNative::SetViewport(int width, int height)
 	glViewport(0, 0, width, height);
 	CheckGLError("GLESNative::SetViewport");
 
-	esgui::app().get().client_size({ (float)width, (float)height });
-	m_layout->rect({ 0, 0, (float)width, (float)height });	
-	m_popup.refresh();
+	esgui::app::get().client_size({ (float)width, (float)height });
+}
+
+void GLESNative::OnTouchEvent(int action, float x, float y)
+{
+	esgui::action act{};
+	switch (action) {
+	case 0:
+		act = esgui::action::down;
+		break;
+	case 1:
+		act = esgui::action::up;
+		break;
+	case 2:
+		act = esgui::action::move;
+		break;
+	}
+	esgui::app::get().touch(act, x, y);
 }

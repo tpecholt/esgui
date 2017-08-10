@@ -124,7 +124,7 @@
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>C:\tope\hg\babis;$(StlIncludeDirectories);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;$(StlIncludeDirectories);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-Wreorder %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
@@ -140,7 +140,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-Wreorder %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\tope\hg\babis;$(StlIncludeDirectories);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;$(StlIncludeDirectories);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -188,10 +188,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="MainRenderer.cpp" />
+    <ClCompile Include="MainView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GLESNative.h" />
-    <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\esgui\esgui.vcxproj">

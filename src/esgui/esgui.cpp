@@ -118,23 +118,18 @@ void app::init_rendering()
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void app::register_(widget* w)
+void app::register_(container* c)
 {
-	m_widgets.push_back(w);
-}
-
-void app::unregister(widget* w)
-{
-	auto it = std::find(m_widgets.begin(), m_widgets.end(), w);
-	if (it == m_widgets.end())
-		return;
-	m_widgets.erase(it);
+	c->rect({ 0, 0, client_size().x, client_size().y });
+	m_containers.push_back(c);
 }
 
 void app::client_size(size s)
 {
 	m_client_size = s;
 	m_mvp = ortho2d(s.x, s.y);
+	for (container* c : m_containers)
+		c->layout()->rect({ 0, 0, s.x, s.y });
 }
 
 size app::screen_size()
@@ -187,8 +182,19 @@ void app::render()
 		glUseProgram(prg);
 		glUniformMatrix4fv(0, 1, false, m_mvp.data());
 	}
-	for (widget* w : m_widgets) {
-		w->render(m_programs.data());
+	for (container* c : m_containers) {
+		c->render(m_programs.data());
+	}
+}
+
+void app::touch(action act, float x, float y)
+{
+	point p{ x, y };
+	for (container* c : m_containers) {
+		if (c->visible() && c->rect().contains(p)) {
+			c->touch(act, p);
+			break;
+		}
 	}
 }
 

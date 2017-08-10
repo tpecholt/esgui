@@ -5,47 +5,10 @@
 namespace esgui
 {
 
-font::font()
-	: m_texture(), m_point_size()
-{}
-
-font::font(int m_texture, int pointSize)
-	: m_texture(m_texture), m_point_size(pointSize)
-{}
-
-font::font(const std::string& face, int pointSize, int style)
-	: m_point_size(pointSize)
-{
-	m_texture = app::get().font_texture(face, style);
-}
-
-//-----------------------------------------------------------------------
-
-color::color(const char* name)
-{
-	static std::map<std::string, color> colors {
-		{ "black", color(0, 0, 0) },
-		{ "white", color(1, 1, 1) },
-		{ "grey", color(0.7, 0.7, 0.7) },
-		{ "red", color(1, 0, 0) },
-		{ "green", color(0, 1, 0) },
-		{ "blue", color(0, 0, 1) },
-	};
-	*this = colors[name];
-}
-
-//-----------------------------------------------------------------------
-
-widget::widget()
+widget::widget(container* cont)
 	: m_visible(true), m_vbos(), m_vbo_sizes(), m_texture(0)
 {
-	app::get().register_(this);
-}
-
-widget::~widget()
-{
-	app::get().unregister(this);
-	glDeleteBuffers(2, m_vbos);
+	cont->register_(this);
 }
 
 void widget::rect(const esgui::rect& r)

@@ -34,6 +34,29 @@
       <Platform>x86</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="android.cpp" />
+    <ClCompile Include="container.cpp" />
+    <ClCompile Include="esgui.cpp" />
+    <ClCompile Include="impl.cpp" />
+    <ClCompile Include="label.cpp" />
+    <ClCompile Include="layout.cpp" />
+    <ClCompile Include="popup.cpp" />
+    <ClCompile Include="widget.cpp" />
+    <ClCompile Include="window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="android.h" />
+    <ClInclude Include="container.h" />
+    <ClInclude Include="event.h" />
+    <ClInclude Include="window.h" />
+    <ClInclude Include="esgui.h" />
+    <ClInclude Include="impl.h" />
+    <ClInclude Include="label.h" />
+    <ClInclude Include="layout.h" />
+    <ClInclude Include="popup.h" />
+    <ClInclude Include="widget.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4acafe69-9478-4afc-b685-bcc29570cfa5}</ProjectGuid>
     <Keyword>Android</Keyword>
@@ -164,24 +187,6 @@
       <CppLanguageStandard>c++11</CppLanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="android.cpp" />
-    <ClCompile Include="esgui.cpp" />
-    <ClCompile Include="impl.cpp" />
-    <ClCompile Include="label.cpp" />
-    <ClCompile Include="layout.cpp" />
-    <ClCompile Include="popup.cpp" />
-    <ClCompile Include="widget.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="android.h" />
-    <ClInclude Include="esgui.h" />
-    <ClInclude Include="impl.h" />
-    <ClInclude Include="label.h" />
-    <ClInclude Include="layout.h" />
-    <ClInclude Include="popup.h" />
-    <ClInclude Include="widget.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

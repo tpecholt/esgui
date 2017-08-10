@@ -5,9 +5,13 @@ import android.content.Context;
 import android.opengl.GLSurfaceView;
 import android.util.Log;
 import android.view.SurfaceHolder;
+import android.view.MotionEvent;
 
 public class MainView extends GLSurfaceView {
 
+	private native void OnTouchEvent(int ev, float dx, float dy);
+
+	private float lastX, lastY;
     protected MainRenderer mRenderer;
 
     public MainView(Context context) {
@@ -36,16 +40,36 @@ public class MainView extends GLSurfaceView {
     }
 
     public void surfaceCreated ( SurfaceHolder holder ) {
-        super.surfaceCreated ( holder );
-	  }
+		super.surfaceCreated ( holder );
+	}
  
-	  public void surfaceDestroyed ( SurfaceHolder holder ) {
-        mRenderer.close();
-        super.surfaceDestroyed ( holder );
-	  }
+	public void surfaceDestroyed ( SurfaceHolder holder ) {
+		mRenderer.close();
+		super.surfaceDestroyed ( holder );
+	}
  
-	  public void surfaceChanged ( SurfaceHolder holder, int format, int w, int h ) {
-        super.surfaceChanged ( holder, format, w, h );
-	  }
+	public void surfaceChanged ( SurfaceHolder holder, int format, int w, int h ) {
+		super.surfaceChanged ( holder, format, w, h );
+	}
 
+	@Override
+	public boolean onTouchEvent(MotionEvent event)
+	{
+		int act = -1;
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
+			act = 0;
+			break;
+		case MotionEvent.ACTION_UP:
+			act = 1;
+			break;
+		case MotionEvent.ACTION_MOVE:
+			act = 2;
+			break;
+		}
+		float x = event.getX();
+		float y = event.getY();
+		OnTouchEvent(act, x, y);
+		return true;
+	}
 }

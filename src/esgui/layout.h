@@ -1,6 +1,6 @@
 #pragma once
 
-#include "widget.h"
+#include "window.h"
 #include <vector>
 
 /*
@@ -22,12 +22,12 @@ class item
 {
 public:
 	item()
-		: m_widget(), m_layout(), m_prop(0), m_space(0)
+		: m_window(), m_layout(), m_prop(0), m_space(0)
 	{}
-	item(esgui::widget& w, float p = 0)
+	item(esgui::window* w, float p = 0)
 		: item()
 	{
-		widget(&w).proportion(p);
+		window(w).proportion(p);
 	}
 	item(esgui::layout* l, float p)
 		: item()
@@ -40,8 +40,8 @@ public:
 	float space() const { return m_space;  }
 	item& proportion(float p) { m_prop = p; return *this; }
 	float proportion() const { return m_prop;  }
-	item& widget(esgui::widget* w) { m_widget = w; return *this; }
-	esgui::widget* widget() const { return m_widget; }
+	item& window(esgui::window* w) { m_window = w; return *this; }
+	esgui::window* window() const { return m_window; }
 	item& layout(esgui::layout* l) { m_layout = l; return *this; }
 	esgui::layout* layout() const { return m_layout; }
 
@@ -50,7 +50,7 @@ public:
 
 private:
 	esgui::layout* m_layout;
-	esgui::widget* m_widget;
+	esgui::window* m_window;
 	float m_prop; //based on all proportions/spaces in a layout
 	float m_space; //based on dpi
 };

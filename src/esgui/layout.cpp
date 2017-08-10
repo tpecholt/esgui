@@ -6,8 +6,8 @@ namespace esgui {
 
 bool item::visible() const
 {
-	if (widget())
-		return widget()->visible();
+	if (window())
+		return window()->visible();
 	else if (layout())
 		return layout()->visible();
 	return true;
@@ -16,8 +16,8 @@ bool item::visible() const
 esgui::size item::min_size(bool horiz) const
 {
 	esgui::size siz;
-	if (widget())
-		siz = widget()->min_size();
+	if (window())
+		siz = window()->min_size();
 	else if (layout())
 		siz = layout()->min_size(horiz);
 	
@@ -63,7 +63,6 @@ void row_layout::refresh()
 	}
 	float x = m_rect.x;
 	float prop_w = m_rect.w - sum_space;
-	const float spkoef = esgui::app::get().screen_dpi() / 25.4;
 	for (const item& i : m_items)
 	{
 		if (!i.visible())
@@ -71,8 +70,8 @@ void row_layout::refresh()
 		float w = i.min_size(true).x;
 		if (i.proportion())
 			w = std::max(w, i.proportion() * prop_w / sum_prop);
-		if (i.widget()) 
-			i.widget()->rect({ x, m_rect.y, w, m_rect.h });
+		if (i.window())
+			i.window()->rect({ x, m_rect.y, w, m_rect.h });
 		if (i.layout())
 			i.layout()->rect({ x, m_rect.y, w, m_rect.h });
 		x += w;
@@ -93,7 +92,6 @@ void column_layout::refresh()
 	}
 	float y = m_rect.y;
 	float prop_h = m_rect.h - sum_space;
-	const float spkoef = esgui::app::get().screen_dpi() / 25.4;
 	for (const item& i : m_items)
 	{
 		if (!i.visible())
@@ -101,8 +99,8 @@ void column_layout::refresh()
 		float h = i.min_size(false).y;
 		if (i.proportion())
 			h = std::max(h, i.proportion() * prop_h / sum_prop);
-		if (i.widget()) 
-			i.widget()->rect({ m_rect.x, y, m_rect.w, h });		
+		if (i.window())
+			i.window()->rect({ m_rect.x, y, m_rect.w, h });
 		if (i.layout()) 
 			i.layout()->rect({ m_rect.x, y, m_rect.w, h });		
 		y += h;

@@ -1,5 +1,6 @@
 #pragma once
 #include "widget.h"
+#include "container.h"
 #include "impl.h"
 #include <string>
 #include <vector>
@@ -24,8 +25,7 @@ public:
 	app();
 	static app& get();
 	
-	void register_(widget* w);
-	void unregister(widget* w);
+	void register_(container* w);
 	int font_texture(const std::string& face, int style);
 	font default_font() { return m_defaultFont; }
 	const font_metrics& font_metrics(font font);
@@ -34,16 +34,13 @@ public:
 	size screen_size();
 	int screen_dpi();
 	
-	void on_click();
-	void on_move();
-	void on_cancel();
-	
+	void touch(action action, float x, float y);	
 	void render();	
 
 private:
 	void init_rendering();
 
-	std::vector<widget*> m_widgets;
+	std::vector<container*> m_containers;
 	font m_defaultFont;
 	struct FontData
 	{

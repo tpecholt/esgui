@@ -4,7 +4,8 @@
 namespace esgui
 {
 
-label::label()
+label::label(container* cont)
+	: widget(cont)
 {
 	m_font = app::get().default_font();
 }
@@ -35,6 +36,12 @@ label& label::font(const esgui::font& f)
 	m_font = f;
 	refresh();
 	return *this;
+}
+
+void label::touch(action act, const point& p) 
+{
+	if (act == action::up && m_on_click)
+		m_on_click();
 }
 
 void label::do_refresh()

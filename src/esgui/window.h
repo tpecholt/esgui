@@ -95,8 +95,8 @@ public:
 	void visible(bool s) { m_visible = s; }
 	bool visible() const { return m_visible; }
 	virtual void rect(const rect& r) {}
-	virtual const esgui::rect& rect() const { return esgui::rect{}; }
-	virtual float z() const { return 0; }
+	virtual const esgui::rect& rect() const { static esgui::rect r; return r; }
+	virtual int z() const { return 0; }
 	virtual size min_size() { return size(0, 0); }
 	virtual void refresh() {}
 	virtual void render(const int programs[]) {}

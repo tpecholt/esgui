@@ -85,7 +85,7 @@ void GLESNative::Init()
 		labels[i] = new label(page);
 		labels[i]->font({ "normal", 24 });
 		labels[i]->color(colors[i]);
-		labels[i]->text_color("white");
+		labels[i]->text_color(i ? "black" : "white");
 		labels[i]->text("Pepik" + to_string(i));
 		if (!i) {
 			labels[i]->on_click([&]() {

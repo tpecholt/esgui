@@ -60,45 +60,53 @@ esgui::rect popup::menu_rect() const
 	return { mx, my, w, h };
 }
 
-void popup::do_refresh()
+void popup::refresh()
 {
 	const color cshadow(0.2, 0.2, 0.2, 0.8);
 	const color cpanel(0.3, 0.3, 0.3);
 	const color cselect(0.5, 0.5, 0.5);
+    const color ctext(1, 1, 1);
 	
 	size client = app::get().client_size();
 	float dpmm = app::get().screen_dpi() / 25.4;
 	float dh = menu_dh();
 	esgui::rect r = menu_rect();
 	
+	if (m_vbos.size() != 2) {
+		m_vbos.resize(2);
+		glGenBuffers(1, &m_vbos[0].id);
+		glGenBuffers(1, &m_vbos[1].id);		
+	}
+	
 	using namespace esguid;
 	std::vector<VertexData> vbo1;
+    //PushRect(vbo1, 0, 0, client.x, client.y, cshadow);
 	PushRect(vbo1, 0, 0, client.x, r.y, cshadow);
 	PushRect(vbo1, 0, r.y, r.x, r.h, cshadow);
 	PushRect(vbo1, 0, client.y - r.y, client.x, r.y, cshadow);
 	PushRect(vbo1, client.x - r.x, r.y, r.x, r.h, cshadow);
-	/*if (m_sel >= 0) {
-		PushRect(vbo1, r.x, r.y, r.w, dh * m_sel, cpanel);
+    PushRect(vbo1, r.x, r.y, r.w, r.h, cpanel);
+	if (m_sel >= 0) {
+		//PushRect(vbo1, r.x, r.y, r.w, dh * m_sel, cpanel);
 		PushRect(vbo1, r.x, r.y + dh * m_sel, r.w, dh, cselect);
-	}*/
-	PushRect(vbo1, r.x, r.y, r.w, r.h, cpanel);
-	if (m_sel >= 0)
-		PushRect(vbo1, r.x, r.y + dh * (m_sel + 1), r.w, (m_items.size() - m_sel - 1) * dh, cpanel);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[0]);
+        //PushRect(vbo1, r.x, r.y + dh * (m_sel + 1), r.w, dh * (m_items.size() - m_sel - 1), cpanel);
+	}
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbos[0].id);
 	glBufferData(GL_ARRAY_BUFFER, vbo1.size() * sizeof(VertexData), vbo1.data(), GL_STATIC_DRAW);
-	m_vbo_sizes[0] = vbo1.size();
+	m_vbos[0].size = vbo1.size();
 
-	std::vector<VertexData> vbo;
+	std::vector<VertexData> vbo2;
 	font font("normal", 18);
 	float df = MeasureText("test", font).y;
 	for (size_t i = 0; i < m_items.size(); ++i)
 	{
-		PushText(vbo, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2, m_items[i], font, "white");
+		PushText(vbo2, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2, m_items[i], font, ctext);
+		//PushRect(vbo2, r.x + 2 * dpmm, r.y + i*dh + (dh - df) / 2, r.w, dh - (dh - df) / 2, "white");
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1]);
-	glBufferData(GL_ARRAY_BUFFER, vbo.size() * sizeof(VertexData), vbo.data(), GL_STATIC_DRAW);
-	m_vbo_sizes[1] = vbo.size();
-	m_texture = font.texture();
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
+	glBufferData(GL_ARRAY_BUFFER, vbo2.size() * sizeof(VertexData), vbo2.data(), GL_STATIC_DRAW);
+	m_vbos[1].size = vbo2.size();
+	m_vbos[1].texture = font.texture();
 }
 
 }

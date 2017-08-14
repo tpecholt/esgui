@@ -15,14 +15,13 @@ public:
 	label& font(const esgui::font& f);
 
 	size min_size();
+	void refresh();
 	void touch(action act, const point& p);
 
 	template <class T>
 	void on_click(T&& fun) { m_on_click = std::forward<T>(fun); }
 
 protected:
-	void do_refresh();	
-
 	std::string m_label;
 	esgui::font m_font;
 	esgui::color m_text_color;

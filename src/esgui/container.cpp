@@ -44,14 +44,17 @@ void container::refresh()
 
 void container::render(const int programs[])
 {
-	for (window* w : m_children)
-		w->render(programs);
+    for (size_t i = 0; i < 7; ++i) {
+        for (window* w : m_children)
+            if (w->z() == i)
+                w->render(programs);
+    }
 }
 
 void container::touch(action act, const point& p)
 {
 	window* win{};
-	float maxZ = -FLT_MAX;
+	int maxZ = -INT_MAX;
 	for (window* w : m_children) {
 		if (!w->visible() || !w->rect().contains(p))
 			continue;

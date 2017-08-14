@@ -77,6 +77,10 @@ app::app()
 
 void app::init_rendering()
 {
+    for (int prg : m_programs)
+        glDeleteProgram(prg);
+    m_programs.clear();
+
 	const char* vertexSource =
 		"uniform mat4 mvp; "
 		"attribute vec2 pos; "
@@ -91,13 +95,13 @@ void app::init_rendering()
 		"	outCoords = coords; "
 		"} ";
 
-	const char* fragmentSource1 =
-		"precision mediump float; "
-		"varying vec4 outColor; "
-		"varying vec2 outCoords; "
-		"void main() "
-		"{ "
-		"   gl_FragColor = outColor; "
+    const char* fragmentSource1 =
+        "precision mediump float; "
+        "varying vec4 outColor; "
+        "varying vec2 outCoords; "
+        "void main() "
+        "{ "
+        "   gl_FragColor = outColor; "
 		"}";
 	
 	const char* fragmentSource2 =
@@ -114,8 +118,9 @@ void app::init_rendering()
 	m_programs.push_back(create_program(vertexSource, fragmentSource2));
 	
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 }
 
 void app::register_(container* c)
@@ -175,16 +180,25 @@ const font_metrics& app::font_metrics(font f)
 
 void app::render()
 {
+	check_err();
 	if (m_programs.empty())
 		init_rendering();
-	
+    check_err();
+    glUseProgram(m_programs[0]);
+    if (glGetError() != GL_NO_ERROR) //after wakeup all programs are invalid
+        init_rendering();
+	check_err();
+
 	for (int prg : m_programs) {
 		glUseProgram(prg);
-		glUniformMatrix4fv(0, 1, false, m_mvp.data());
+		int loc = glGetUniformLocation(prg, "mvp");
+		glUniformMatrix4fv(loc, 1, false, m_mvp.data());
 	}
+	check_err();
 	for (container* c : m_containers) {
 		c->render(m_programs.data());
 	}
+	check_err();
 }
 
 void app::touch(action act, float x, float y)

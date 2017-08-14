@@ -9,7 +9,7 @@ class popup : public widget
 public:
 	popup(container*);
 
-	float z() const	{ return 10; }
+	int z() const	{ return 5; }
 	template <class C>
 	popup& items(const C& items)
 	{
@@ -23,8 +23,9 @@ public:
 		refresh();
 		return *this;
 	}
+	void refresh();
 	void touch(action act, const point& p);
-	void exec();
+	void exec();    
 	
 	template <class T>
 	void on_popup(T&& fun) { m_on_popup = std::forward<T>(fun); }	
@@ -32,7 +33,6 @@ public:
 private:
 	float menu_dh() const;
 	esgui::rect menu_rect() const;
-	void do_refresh();
 
 	std::vector<std::string> m_items;
 	int m_sel;

@@ -44,21 +44,27 @@ void label::touch(action act, const point& p)
 		m_on_click();
 }
 
-void label::do_refresh()
+void label::refresh()
 {
+	if (m_vbos.size() != 2) {
+		m_vbos.resize(2);
+		glGenBuffers(1, &m_vbos[0].id);
+		glGenBuffers(1, &m_vbos[1].id);		
+	}
+
 	using namespace esguid;
 	std::vector<VertexData> vbo1;
 	PushRect(vbo1, m_rect.x, m_rect.y, m_rect.w, m_rect.h, m_color);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[0].id);
 	glBufferData(GL_ARRAY_BUFFER, vbo1.size() * sizeof(VertexData), vbo1.data(), GL_STATIC_DRAW);
-	m_vbo_sizes[0] = vbo1.size();
+	m_vbos[0].size = vbo1.size();
 
-	std::vector<VertexData> vbo(6 * m_label.size());
+	std::vector<VertexData> vbo;
 	PushText(vbo, m_rect.x, m_rect.y, m_label, m_font, m_text_color);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
 	glBufferData(GL_ARRAY_BUFFER, vbo.size() * sizeof(VertexData), vbo.data(), GL_STATIC_DRAW);
-	m_vbo_sizes[1] = vbo.size();
-	m_texture = m_font.texture();
+	m_vbos[1].size = vbo.size();
+	m_vbos[1].texture = m_font.texture();
 }
 
 size label::min_size()

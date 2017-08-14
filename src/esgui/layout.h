@@ -47,6 +47,7 @@ public:
 
 	bool visible() const;
 	esgui::size min_size(bool horiz) const;
+    void rect(const esgui::rect& r);
 
 private:
 	esgui::layout* m_layout;

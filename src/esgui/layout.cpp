@@ -13,6 +13,14 @@ bool item::visible() const
 	return true;
 }
 
+void item::rect(const esgui::rect& r)
+{
+    if (window())
+        window()->rect(r);
+    else if (layout())
+        layout()->rect(r);
+}
+
 esgui::size item::min_size(bool horiz) const
 {
 	esgui::size siz;
@@ -51,58 +59,60 @@ esgui::size layout::min_size(bool horiz) const
 
 void row_layout::refresh()
 {
-	float sum_space = 0;
-	float sum_prop = 0;
+    float sum_min = 0;
+    float sum_fixed = 0;
+    float sum_prop = 0;
 	for (const item& i : m_items)
 	{
 		if (!visible())
 			continue;
 		sum_prop += i.proportion();
+        float w = i.min_size(true).x;
+        sum_min += w;
 		if (!i.proportion())
-			sum_space += i.min_size(true).x;		
+			sum_fixed += w;
 	}
-	float x = m_rect.x;
-	float prop_w = m_rect.w - sum_space;
-	for (const item& i : m_items)
+    bool overflow = sum_min > m_rect.w;
+    float x = m_rect.x;
+	float prop_w = m_rect.w - sum_fixed;
+	for (item& i : m_items)
 	{
 		if (!i.visible())
 			continue;
 		float w = i.min_size(true).x;
-		if (i.proportion())
+		if (!overflow && i.proportion())
 			w = std::max(w, i.proportion() * prop_w / sum_prop);
-		if (i.window())
-			i.window()->rect({ x, m_rect.y, w, m_rect.h });
-		if (i.layout())
-			i.layout()->rect({ x, m_rect.y, w, m_rect.h });
+		i.rect({ x, m_rect.y, w, m_rect.h });
 		x += w;
 	}
 }
 
 void column_layout::refresh()
 {
-	float sum_space = 0;
-	float sum_prop = 0;
-	for (const item& i : m_items)
+    float sum_min = 0;
+    float sum_fixed = 0;
+    float sum_prop = 0;
+    for (const item& i : m_items)
 	{
 		if (!i.visible())
 			continue;
 		sum_prop += i.proportion();
-		if (!i.proportion())
-			sum_space += i.min_size(false).y;		
+        float h = i.min_size(true).y;
+        sum_min += h;
+        if (!i.proportion())
+			sum_fixed += i.min_size(false).y;		
 	}
+    bool overflow = sum_min > m_rect.h;
 	float y = m_rect.y;
-	float prop_h = m_rect.h - sum_space;
-	for (const item& i : m_items)
+	float prop_h = m_rect.h - sum_fixed;
+	for (item& i : m_items)
 	{
 		if (!i.visible())
 			continue;
 		float h = i.min_size(false).y;
-		if (i.proportion())
+		if (!overflow && i.proportion())
 			h = std::max(h, i.proportion() * prop_h / sum_prop);
-		if (i.window())
-			i.window()->rect({ m_rect.x, y, m_rect.w, h });
-		if (i.layout()) 
-			i.layout()->rect({ m_rect.x, y, m_rect.w, h });		
+		i.rect({ m_rect.x, y, m_rect.w, h });
 		y += h;
 	}
 }

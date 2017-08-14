@@ -23,7 +23,7 @@ Java_com_esgui_MainRenderer_SurfaceCreatedNative(JNIEnv *env,
 	if (gGlesObject == NULL) {
 		return;
 	}
-	gGlesObject->Init();
+    gGlesObject->Init();
 
 }
 

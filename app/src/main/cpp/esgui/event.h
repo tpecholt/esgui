@@ -3,7 +3,7 @@
 
 namespace esgui {
 
-enum class action { down, up, move };
+enum class action { down, up, move, cancel };
 
 template <class Signature>
 using event = std::function<Signature>;

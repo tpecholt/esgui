@@ -9,6 +9,7 @@ public class MainActivity extends Activity {
 
     private native void CreateObjectNative();
     private native void DeleteObjectNative();
+    private native void OnBackPressedNative();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,5 +25,11 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         super.onDestroy();
         DeleteObjectNative();
+    }
+
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        OnBackPressedNative();
     }
 }

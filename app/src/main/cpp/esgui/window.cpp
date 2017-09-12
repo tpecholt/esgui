@@ -26,10 +26,14 @@ color::color(const char* name)
 		{ "black", color(0, 0, 0) },
 		{ "white", color(1, 1, 1) },
 		{ "grey", color(0.7, 0.7, 0.7) },
+		{ "dark grey", color(0.4, 0.4, 0.4) },
+		{ "light grey", color(0.8, 0.8, 0.8) },
 		{ "red", color(1, 0, 0) },
 		{ "green", color(0, 1, 0) },
 		{ "blue", color(0, 0, 1) },
 		{ "yellow", color(1, 1, 0) },
+		{ "orange", color(1, 0.5, 0)},
+		{ "brown", color(1, 0.5, 0.25)}
 	};
 	*this = colors[name];
 }

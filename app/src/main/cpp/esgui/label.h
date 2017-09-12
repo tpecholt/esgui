@@ -13,6 +13,7 @@ public:
 	label& color(const esgui::color& color);
 	label& text_color(const esgui::color& color);
 	label& font(const esgui::font& f);
+	label& alignment(int align);
 
 	size min_size();
 	void refresh();
@@ -26,6 +27,7 @@ protected:
 	esgui::font m_font;
 	esgui::color m_text_color;
 	esgui::color m_color;
+	int m_alignment;
 	event<void()> m_on_click;
 };
 

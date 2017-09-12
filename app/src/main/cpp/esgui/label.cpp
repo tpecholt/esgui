@@ -38,7 +38,14 @@ label& label::font(const esgui::font& f)
 	return *this;
 }
 
-void label::touch(action act, const point& p) 
+label& label::alignment(int a)
+{
+	m_alignment = a;
+	refresh();
+	return *this;
+}
+
+void label::touch(action act, const point& p)
 {
 	if (act == action::up && m_on_click)
 		m_on_click();
@@ -64,7 +71,18 @@ void label::refresh()
     m_vbos[0].size = vbo1.size();
 
     std::vector<VertexData> vbo2;
-	PushText(vbo2, m_rect.x, m_rect.y, m_label, m_font, m_text_color);
+	size s = esguid::MeasureText(m_label, m_font);
+	float x = 0, y = 0;
+	if (m_alignment & right)
+		x = m_rect.w - s.x;
+	else if (m_alignment & hcenter)
+		x = (m_rect.w - s.x) / 2;
+	if (m_alignment & bottom)
+		y = m_rect.h - s.y;
+	else if (m_alignment & vcenter)
+		y = (m_rect.h - s.y) / 2;
+
+	PushText(vbo2, m_rect.x + x, m_rect.y + y, m_label, m_font, m_text_color);
     check_err();
     glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
 	glBufferData(GL_ARRAY_BUFFER, vbo2.size() * sizeof(VertexData), vbo2.data(), GL_STATIC_DRAW);

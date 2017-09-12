@@ -52,11 +52,13 @@ int CreateFontAtlas(const char* face, bool bold, bool italic, float* spacing, fl
 	if (!mid)
 		return 0;
 	jstring jface = env->NewStringUTF(face);
-	int texture = env->CallStaticIntMethod(cls, mid, jface, bold, italic);
+	jboolean jbold = bold;
+	jboolean  jitalic = italic;
+	int texture = env->CallStaticIntMethod(cls, mid, jface, jbold, jitalic);
 	mid = env->GetStaticMethodID(cls, "getFontSpacing", "(Ljava/lang/String;ZZ)[F");
 	if (!mid)
 		return 0;
-	jfloatArray arr = (jfloatArray)env->CallStaticObjectMethod(cls, mid, bold, italic);
+	jfloatArray arr = (jfloatArray)env->CallStaticObjectMethod(cls, mid, jface, jbold, jitalic);
 	jfloat *data = env->GetFloatArrayElements(arr, 0);
 	int size = esguid::FONT_ATLAS_COLS * esguid::FONT_ATLAS_COLS;
 	*ascent = data[size - 2];

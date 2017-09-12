@@ -16,7 +16,7 @@ public:
 	esgui::layout* layout() { return m_layout; }
 	const std::vector<window*>& children() { return m_children; }
 
-	virtual esgui::size min_size() { return m_layout->min_size(true); }
+	virtual esgui::size min_size() { return m_layout->min_size(); }
 	virtual void touch(action act, const point& p);
 
 	void register_(window* w);

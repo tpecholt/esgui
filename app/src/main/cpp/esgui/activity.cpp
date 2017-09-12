@@ -17,6 +17,12 @@ Java_com_tope_esgui_MainActivity_DeleteObjectNative(JNIEnv *env, jobject instanc
 }
 
 JNIEXPORT void JNICALL
+Java_com_tope_esgui_MainActivity_OnBackPressedNative(JNIEnv *env, jobject instance)
+{
+	esgui::app::get().touch(esgui::action::cancel, 0, 0);
+}
+
+JNIEXPORT void JNICALL
 Java_com_tope_esgui_MainRenderer_SurfaceCreatedNative(JNIEnv *env,
                                                       jobject instance)
 {

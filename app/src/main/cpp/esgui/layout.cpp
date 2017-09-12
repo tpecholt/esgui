@@ -24,17 +24,19 @@ void item::rect(const esgui::rect& r)
 esgui::size item::min_size(bool horiz) const
 {
 	esgui::size siz;
-	if (window())
+    float sp = space() * esgui::app::get().screen_dpi() / 25.4;
+    if (sp)
+        siz = horiz ? size{sp, 0} : size{0, sp};
+	else if (window())
 		siz = window()->min_size();
 	else if (layout())
-		siz = layout()->min_size(horiz);
-	
-	float sp = space() * esgui::app::get().screen_dpi() / 25.4;
-	if (horiz)
-		siz.x += sp;
-	else
-		siz.y += sp;
+		siz = layout()->min_size();
 
+    if (m_min_size.x)
+		siz.x = m_min_size.x;
+	if (m_min_size.y)
+		siz.y = m_min_size.y;
+	
 	return siz;
 }
 
@@ -46,17 +48,19 @@ void layout::rect(const esgui::rect& r)
 	refresh();
 }
 
-esgui::size layout::min_size(bool horiz) const
+//--------------------------------------------------------------------------
+
+esgui::size row_layout::min_size() const
 {
     check_err();
-	esgui::size siz;
-	for (const item& i : m_items) {
-		esgui::size s = i.min_size(horiz);
-		siz.x = std::max(siz.x, s.x);
-		siz.y = std::max(siz.y, s.y);
-	}
+    esgui::size siz;
+    for (const item& i : m_items) {
+        esgui::size s = i.min_size(true);
+        siz.x += s.x;
+        siz.y = std::max(siz.y, s.y);
+    }
     check_err();
-	return siz;
+    return siz;
 }
 
 void row_layout::refresh()
@@ -92,6 +96,21 @@ void row_layout::refresh()
     check_err();
 }
 
+//--------------------------------------------------------------------------
+
+esgui::size column_layout::min_size() const
+{
+    check_err();
+    esgui::size siz;
+    for (const item& i : m_items) {
+        esgui::size s = i.min_size(false);
+        siz.x = std::max(siz.x, s.x);
+        siz.y += s.y;
+    }
+    check_err();
+    return siz;
+}
+
 void column_layout::refresh()
 {
     float sum_min = 0;
@@ -103,10 +122,10 @@ void column_layout::refresh()
 		if (!i.visible())
 			continue;
 		sum_prop += i.proportion();
-        float h = i.min_size(true).y;
+        float h = i.min_size(false).y;
         sum_min += h;
         if (!i.proportion())
-			sum_fixed += i.min_size(false).y;		
+			sum_fixed += h;
 	}
     check_err();
     bool overflow = sum_min > m_rect.h;

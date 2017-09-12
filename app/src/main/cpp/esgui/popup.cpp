@@ -24,22 +24,28 @@ void popup::touch(action act, const point& p)
 	esgui::rect r = menu_rect();
 	int idx = int((p.y - r.y) / dh);
 	switch (act) {
-	case action::down:
-		if (r.contains(p)) {
-			m_sel = idx;
-			refresh();
-		}
-		break;
-	case action::up:
-		int last_sel = m_sel;
-		m_sel = -1;
-		refresh();
-		if (r.contains(p) && idx == last_sel) {
+		case action::down:
+			if (r.contains(p)) {
+				m_sel = idx;
+				refresh();
+			}
+			break;
+		case action::up: {
+            int last_sel = m_sel;
+            m_sel = -1;
+            refresh();
+            if (r.contains(p) && idx == last_sel) {
+                if (m_on_popup)
+                    m_on_popup(idx);
+                visible(false);
+            }
+            break;
+        }
+		case action::cancel:
 			if (m_on_popup)
-				m_on_popup(idx);
+				m_on_popup(-1);
 			visible(false);
-		}
-		break;
+			break;
 	}	
 }
 
@@ -71,7 +77,6 @@ void popup::refresh()
     const color ctext(1, 1, 1);
 	
 	size client = app::get().client_size();
-    LOGE("refresh with client.y=%f", client.y);
     /*if (!client.y)
         return;*/
 	float dpmm = app::get().screen_dpi() / 25.4;
@@ -102,12 +107,11 @@ void popup::refresh()
 	m_vbos[0].size = vbo1.size();
 
 	std::vector<VertexData> vbo2;
-	font font("normal", 18);
+	font font("normal", 14);
 	float df = MeasureText("test", font).y;
-    r.y = client.y / 3;
-	for (size_t i = 0; i < m_items.size(); ++i)
+    for (size_t i = 0; i < m_items.size(); ++i)
 	{
-        PushText(vbo2, r.x + 2*dpmm, r.y + i*dh + (dh-df)/4, m_items[i], font, ctext);
+        PushText(vbo2, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2, m_items[i], font, ctext);
 		//PushRect(vbo2, r.x + 2 * dpmm, r.y + i*dh + (dh - df) / 2, r.w, dh - (dh - df) / 2, "white");
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);

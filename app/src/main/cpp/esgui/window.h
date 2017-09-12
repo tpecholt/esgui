@@ -84,6 +84,16 @@ private:
 	int m_point_size;
 };
 
+enum alignment
+{
+	left = 0,
+	right = 0x1,
+	hcenter = 0x2,
+	bottom = 0x4,
+	top = 0,
+	vcenter = 0x8,
+};
+
 class window
 {
 public:

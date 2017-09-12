@@ -16,6 +16,13 @@ column(
 namespace esgui
 {
 
+struct milimeters
+{
+    milimeters(float f) : val(f) {}
+	operator float() const { return val; }
+    float val;
+};
+
 class layout;
 
 class item
@@ -29,12 +36,22 @@ public:
 	{
 		window(w).proportion(p);
 	}
-	item(esgui::layout* l, float p)
+    item(esgui::window* w, milimeters mm)
+        : item()
+    {
+        window(w).space(mm);
+    }
+    item(esgui::layout* l, float p)
 		: item()
 	{
 		layout(l).proportion(p);
 	}
-	operator layout* () const { return layout(); }
+    item(esgui::layout* l, milimeters mm)
+            : item()
+    {
+        layout(l).space(mm);
+    }
+    operator layout* () const { return layout(); }
 	
 	item& space(float s) { m_space = s; return *this; }
 	float space() const { return m_space;  }
@@ -44,16 +61,18 @@ public:
 	esgui::window* window() const { return m_window; }
 	item& layout(esgui::layout* l) { m_layout = l; return *this; }
 	esgui::layout* layout() const { return m_layout; }
+	item& min_size(esgui::size s) { m_min_size = s; return *this; }
 
 	bool visible() const;
 	esgui::size min_size(bool horiz) const;
-    void rect(const esgui::rect& r);
+	void rect(const esgui::rect& r);
 
 private:
 	esgui::layout* m_layout;
 	esgui::window* m_window;
 	float m_prop; //based on all proportions/spaces in a layout
 	float m_space; //based on dpi
+	esgui::size m_min_size;
 };
 
 inline item stretch(float p = 1.0)
@@ -67,6 +86,14 @@ inline item space(float s)
 }
 
 //-------------------------------------------------------------------------------
+
+inline std::vector<item> operator| (window* a, item&& b)
+{
+    std::vector<item> vec;
+    vec.push_back(item(a));
+    vec.push_back(std::move(b));
+    return vec;
+}
 
 inline std::vector<item> operator| (item&& a, item&& b)
 {
@@ -113,7 +140,7 @@ public:
 	bool visible() const { return m_visible; }
 	void rect(const esgui::rect& r);
 	const esgui::rect& rect() const { return m_rect; }
-	esgui::size min_size(bool horiz) const;
+	virtual esgui::size min_size() const = 0;
 	virtual void refresh() = 0;
 
 protected:
@@ -128,6 +155,7 @@ class column_layout : public layout
 {
 public:
 	using layout::layout;
+    esgui::size min_size() const;
 	void refresh();
 };
 
@@ -142,12 +170,18 @@ class row_layout : public layout
 {
 public:
 	using layout::layout;
+	esgui::size min_size() const;
 	void refresh();
 };
 
 inline item row(std::vector<item>&& items, float prop = 0)
 {
 	return item(new row_layout(std::move(items)), prop);
+}
+
+inline item row(std::vector<item>&& items, milimeters mm)
+{
+    return item(new row_layout(std::move(items)), mm);
 }
 
 //-------------------------------------------------------------------

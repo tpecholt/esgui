@@ -26,6 +26,7 @@ protected:
 		int size;
 		int texture;
 		esgui::rect scissor;
+        esgui::point scroll;
 		vbo() : id(), size(), texture() {}
 	};
 	std::vector<vbo> m_vbos;

@@ -56,13 +56,16 @@ Java_com_tope_esgui_MainView_OnTouchEventNative(JNIEnv *env,
 	switch (action) {
 		case 0:
 			act = esgui::action::down;
+            //LOGI("down");
 			break;
 		case 1:
 			act = esgui::action::up;
-			break;
+            //LOGI("up");
+            break;
 		case 2:
 			act = esgui::action::move;
-			break;
+            //LOGI("move");
+            break;
 	}
 	esgui::app::get().touch(act, x, y);
 }

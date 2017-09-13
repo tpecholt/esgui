@@ -58,12 +58,15 @@ public class MainView extends GLSurfaceView {
 		int act = -1;
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
+				//Log.i("onTouch", "down");
 				act = 0;
 				break;
 			case MotionEvent.ACTION_UP:
+				//Log.i("onTouch", "up");
 				act = 1;
 				break;
 			case MotionEvent.ACTION_MOVE:
+				//Log.i("onTouch", "move");
 				act = 2;
 				break;
 			default:

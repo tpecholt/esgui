@@ -38,6 +38,8 @@ private:
 	std::vector<std::string> m_items;
 	int m_sel;
 	int m_highlighted;
+    float m_scroll, m_last_scroll;
+	esgui::point m_last_down;
 	event<void(int)> m_on_popup;
 };
 

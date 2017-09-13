@@ -1,5 +1,6 @@
 #include "popup.h"
 #include "app.h"
+#include <cmath>
 
 namespace esgui {
 
@@ -14,6 +15,7 @@ void popup::exec()
 	size client = app::get().client_size();
 	m_rect = { 0, 0, client.x, client.y };
 	m_highlighted = -1;
+    m_scroll = 0;
 	refresh();
 	visible(true);
 }
@@ -22,19 +24,31 @@ void popup::touch(action act, const point& p)
 {
 	float dh = menu_dh();
 	esgui::rect r = menu_rect();
-	int idx = int((p.y - r.y) / dh);
+	int idx = int((p.y - r.y - m_scroll) / dh);
 	switch (act) {
 		case action::down:
 			if (r.contains(p)) {
-                m_highlighted = idx;
-				refresh();
+                m_last_down = p;
+                m_last_scroll = m_scroll;
+                refresh();
 			}
 			break;
+        case action ::move:
+            if (std::abs(p.y - m_last_down.y) < 10)
+                break;
+            m_scroll = m_last_scroll + p.y - m_last_down.y;
+            m_scroll = std::min(m_scroll, 0.f);
+            m_scroll = std::max(m_scroll, r.h - m_items.size() * dh);
+            m_last_scroll = m_scroll - p.y + m_last_down.y; //update m_last so that movement over limits won't count
+            for (size_t i = 1; i < m_vbos.size(); ++i)
+                m_vbos[i].scroll = {0, m_scroll};
+            break;
 		case action::up: {
-            int last_highlighted = m_highlighted;
-            m_highlighted = -1;
-            refresh();
-            if (r.contains(p) && idx == last_highlighted) {
+            if (std::abs(p.y - m_last_down.y) > 10)
+                break;
+            if (r.contains(p)) {
+                m_highlighted = idx;
+                refresh();
                 if (m_on_popup)
                     m_on_popup(idx);
                 visible(false);
@@ -108,17 +122,18 @@ void popup::refresh()
     //selection + radios
     std::vector<VertexData> vbo2;
     if (m_highlighted >= 0) {
-        PushRect(vbo2, r.x, r.y + dh * m_highlighted, r.w, dh, cselect);
+        PushRect(vbo2, r.x, r.y + dh * m_highlighted /*+ m_scroll*/, r.w, dh, cselect);
     }
     for (size_t i = 0; i < m_items.size(); ++i)
     {
         color cradio = i == m_sel ? cradio2 : cradio1;
-        PushRadio(vbo2, i == m_sel, r.x + r.w - 3.5*dpmm, r.y + i*dh + dh/2, 1.5*dpmm, cradio);
+        PushRadio(vbo2, i == m_sel, r.x + r.w - 3.5*dpmm, r.y + i*dh + dh/2 /*+ m_scroll*/, 1.5*dpmm, cradio);
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
     glBufferData(GL_ARRAY_BUFFER, vbo2.size() * sizeof(VertexData), vbo2.data(), GL_STATIC_DRAW);
     m_vbos[1].size = vbo2.size();
     m_vbos[1].scissor = r;
+    m_vbos[1].scroll = {0, m_scroll};
 
     //labels
     std::vector<VertexData> vbo3;
@@ -126,7 +141,7 @@ void popup::refresh()
 	float df = MeasureText("test", font).y;
     for (size_t i = 0; i < m_items.size(); ++i)
 	{
-        PushText(vbo3, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2, m_items[i], font, ctext);
+        PushText(vbo3, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2 /*+ m_scroll*/, m_items[i], font, ctext);
         //PushRect(vbo3, r.x + 2 * dpmm, r.y + i*dh + (dh - df) / 2, r.w, dh - (dh - df) / 2, "white");
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[2].id);
@@ -134,6 +149,7 @@ void popup::refresh()
 	m_vbos[2].size = vbo3.size();
 	m_vbos[2].texture = font.texture();
     m_vbos[2].scissor = r;
+    m_vbos[2].scroll = {0, m_scroll};
 }
 
 }

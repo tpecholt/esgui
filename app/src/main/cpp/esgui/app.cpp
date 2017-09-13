@@ -83,6 +83,7 @@ void app::init_rendering()
 
     const char* vertexSource =
         "uniform mat4 mvp; "
+	    "uniform vec2 scroll; "
         "attribute vec2 pos; "
         "attribute vec2 coords; "
         "attribute vec4 color; "
@@ -90,8 +91,7 @@ void app::init_rendering()
         "varying vec2 outCoords; "
         "void main() "
         "{ "
-        "	gl_Position = mvp * vec4(pos, 0, 1.0); "
-        //"   gl_Position = vec4(0.002 * pos.x, -0.001 * pos.y, 0, 1.0); "
+        "	gl_Position = mvp * vec4(pos + scroll, 0, 1.0); "
 		"	outColor = color; "
 		"	outCoords = coords; "
 		"} ";

@@ -23,52 +23,41 @@ void widget::render(const int programs[], const float mvp[])
 	if (!visible())
 		return;
 
-	//glEnable(GL_SCISSOR_TEST);
-	size client = app::get().client_size();
-	//glScissor(m_rect.x, client.y - m_rect.y - m_rect.h, m_rect.w, m_rect.h);
-
-	check_err();
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
 	glEnableVertexAttribArray(2);
-	check_err();
 
 	for (int i = 0; i < m_vbos.size(); ++i)
 	{
-		if (!m_vbos[i].size)
+        const auto& vbo = m_vbos[i];
+		if (!vbo.size)
 			continue;
-        if (!m_vbos[i].scissor.invalid()) {
+        if (!vbo.scissor.invalid()) {
             glEnable(GL_SCISSOR_TEST);
-            const esgui::rect& s = m_vbos[i].scissor;
+            const esgui::rect& s = vbo.scissor;
             glScissor(s.x, s.y, s.w, s.h);
         }
-        int prog = programs[m_vbos[i].texture ? 1 : 0];
+        int prog = programs[vbo.texture ? 1 : 0];
 		glUseProgram(prog);
-		check_err();
-        int loc = glGetUniformLocation(prog, "mvp");
+		int loc = glGetUniformLocation(prog, "mvp");
         glUniformMatrix4fv(loc, 1, false, mvp);
-		check_err();
-		glBindTexture(GL_TEXTURE_2D, m_vbos[i].texture);
-		check_err();
+        loc = glGetUniformLocation(prog, "scroll");
+        glUniform2f(loc, vbo.scroll.x, vbo.scroll.y);
+		glBindTexture(GL_TEXTURE_2D, vbo.texture);
 
         //always use glGetAttribLocation as locations might be different on different platforms
-		glBindBuffer(GL_ARRAY_BUFFER, m_vbos[i].id);
-		check_err();
-        int id = glGetAttribLocation(prog, "pos");
+		glBindBuffer(GL_ARRAY_BUFFER, vbo.id);
+		int id = glGetAttribLocation(prog, "pos");
         glVertexAttribPointer(id, 2, GL_FLOAT, GL_FALSE, sizeof(esguid::VertexData), 0);
-        check_err();
         id = glGetAttribLocation(prog, "coords");
         if (id >= 0) {
             glVertexAttribPointer(id, 2, GL_FLOAT, GL_FALSE, sizeof(esguid::VertexData), (void *) (2 * sizeof(float)));
-            check_err();
         }
         id = glGetAttribLocation(prog, "color");
         glVertexAttribPointer(id, 4, GL_FLOAT, GL_FALSE, sizeof(esguid::VertexData), (void*)(4 * sizeof(float)));
-		check_err();
 
-		glDrawArrays(GL_TRIANGLES, 0, m_vbos[i].size);
-		check_err();
-        glDisable(GL_SCISSOR_TEST);
+		glDrawArrays(GL_TRIANGLES, 0, vbo.size);
+		glDisable(GL_SCISSOR_TEST);
 	}
 
 	glDisableVertexAttribArray(0);

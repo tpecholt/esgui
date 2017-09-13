@@ -68,7 +68,7 @@ void init_controls()
         if (idx < 0)
             return;
         pop2->selection(idx);
-        buts[1]->text(to_upper(pop1->items()[idx]));
+        buts[1]->text(to_upper(pop2->items()[idx]));
     });
     popup* pop3 = new popup(page);
     pop3->items({"Kraken", "Bitstamp", "GDAX", "Bitfinex"});
@@ -76,7 +76,7 @@ void init_controls()
         if (idx < 0)
             return;
         pop3->selection(idx);
-        buts[2]->text(to_upper(pop1->items()[idx]));
+        buts[2]->text(to_upper(pop3->items()[idx]));
     });
 
     buts[0]->on_click([=]{

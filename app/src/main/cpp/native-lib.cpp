@@ -44,7 +44,7 @@ void init_controls()
         label* but = new label(page);
         but->color("dark grey");
         but->text_color("white");
-        but->font({"normal", 10, font::bold});
+        but->font({"normal", 9, font::bold});
         but->alignment(hcenter | vcenter);
         buts.push_back(but);
     }
@@ -57,20 +57,26 @@ void init_controls()
     pop1->items({"Bitcoin", "Ethereum", "Bitcoin Cash", "Ripple", "Litecoin", "Dash", "Iota", "NEM", "neo", "Monero", "Ethereum Classic",
                 "Qtum", "OmiseGo", "BitConnect", "Lisk"});
     pop1->on_popup([=](int idx){
-        if (idx >= 0)
-            buts[0]->text(to_upper(pop1->items()[idx]));
+        if (idx < 0)
+            return;
+        pop1->selection(idx);
+        buts[0]->text(to_upper(pop1->items()[idx]));
     });
     popup* pop2 = new popup(page);
     pop2->items({"USD", "EUR", "GBP", "CAD", "CNY", "AUD", "PLN", "JPY"});
     pop2->on_popup([=](int idx){
-        if (idx >= 0)
-            buts[1]->text(to_upper(pop2->items()[idx]));
+        if (idx < 0)
+            return;
+        pop2->selection(idx);
+        buts[1]->text(to_upper(pop1->items()[idx]));
     });
     popup* pop3 = new popup(page);
     pop3->items({"Kraken", "Bitstamp", "GDAX", "Bitfinex"});
     pop3->on_popup([=](int idx){
-        if (idx >= 0)
-            buts[2]->text(to_upper(pop3->items()[idx]));
+        if (idx < 0)
+            return;
+        pop3->selection(idx);
+        buts[2]->text(to_upper(pop1->items()[idx]));
     });
 
     buts[0]->on_click([=]{

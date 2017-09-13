@@ -25,6 +25,7 @@ protected:
 		unsigned id;
 		int size;
 		int texture;
+		esgui::rect scissor;
 		vbo() : id(), size(), texture() {}
 	};
 	std::vector<vbo> m_vbos;

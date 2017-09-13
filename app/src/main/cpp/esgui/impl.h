@@ -33,6 +33,8 @@ struct VertexData
 
 void PushRect(std::vector<VertexData>& vbo, float x, float y, float w, float h, const esgui::color& c);
 
+void PushRadio(std::vector<VertexData>& vbo, bool on, float x, float y, float r, const esgui::color& c);
+
 void PushText(std::vector<VertexData>& vbo, float x, float y, const std::string& label, const esgui::font& f, const esgui::color& clr);
 
 esgui::size MeasureText(const std::string& label, const esgui::font& f);

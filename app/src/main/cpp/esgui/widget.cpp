@@ -24,7 +24,7 @@ void widget::render(const int programs[], const float mvp[])
 		return;
 
 	//glEnable(GL_SCISSOR_TEST);
-	//size client = app::get().client_size();
+	size client = app::get().client_size();
 	//glScissor(m_rect.x, client.y - m_rect.y - m_rect.h, m_rect.w, m_rect.h);
 
 	check_err();
@@ -37,6 +37,11 @@ void widget::render(const int programs[], const float mvp[])
 	{
 		if (!m_vbos[i].size)
 			continue;
+        if (!m_vbos[i].scissor.invalid()) {
+            glEnable(GL_SCISSOR_TEST);
+            const esgui::rect& s = m_vbos[i].scissor;
+            glScissor(s.x, s.y, s.w, s.h);
+        }
         int prog = programs[m_vbos[i].texture ? 1 : 0];
 		glUseProgram(prog);
 		check_err();
@@ -63,12 +68,12 @@ void widget::render(const int programs[], const float mvp[])
 
 		glDrawArrays(GL_TRIANGLES, 0, m_vbos[i].size);
 		check_err();
+        glDisable(GL_SCISSOR_TEST);
 	}
 
 	glDisableVertexAttribArray(0);
 	glDisableVertexAttribArray(1);
 	glDisableVertexAttribArray(2);
-	//glDisable(GL_SCISSOR_TEST);
 	check_err();
 }
 

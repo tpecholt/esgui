@@ -4,7 +4,7 @@
 namespace esgui {
 
 popup::popup(container* c)
-	: widget(c)
+	: widget(c), m_highlighted(-1), m_sel()
 {
 	visible(false);
 }
@@ -13,7 +13,7 @@ void popup::exec()
 {
 	size client = app::get().client_size();
 	m_rect = { 0, 0, client.x, client.y };
-	m_sel = -1;
+	m_highlighted = -1;
 	refresh();
 	visible(true);
 }
@@ -26,15 +26,15 @@ void popup::touch(action act, const point& p)
 	switch (act) {
 		case action::down:
 			if (r.contains(p)) {
-				m_sel = idx;
+                m_highlighted = idx;
 				refresh();
 			}
 			break;
 		case action::up: {
-            int last_sel = m_sel;
-            m_sel = -1;
+            int last_highlighted = m_highlighted;
+            m_highlighted = -1;
             refresh();
-            if (r.contains(p) && idx == last_sel) {
+            if (r.contains(p) && idx == last_highlighted) {
                 if (m_on_popup)
                     m_on_popup(idx);
                 visible(false);
@@ -52,7 +52,7 @@ void popup::touch(action act, const point& p)
 float popup::menu_dh() const
 {
 	float dpmm = app::get().screen_dpi() / 25.4;
-	return 12 * dpmm;
+	return 11 * dpmm;
 }
 
 esgui::rect popup::menu_rect() const
@@ -75,6 +75,8 @@ void popup::refresh()
 	const color cpanel(0.3, 0.3, 0.3);
 	const color cselect(0.5, 0.5, 0.5);
     const color ctext(1, 1, 1);
+    const color cradio1(0.7, 0.7, 0.7);
+    const color cradio2(0.4, 0.8, 0.8);
 	
 	size client = app::get().client_size();
     /*if (!client.y)
@@ -84,11 +86,13 @@ void popup::refresh()
 	esgui::rect r = menu_rect();
 	
 	if (m_vbos.size() != 2) {
-		m_vbos.resize(2);
+		m_vbos.resize(3);
 		glGenBuffers(1, &m_vbos[0].id);
-		glGenBuffers(1, &m_vbos[1].id);		
-	}
-	
+		glGenBuffers(1, &m_vbos[1].id);
+        glGenBuffers(1, &m_vbos[2].id);
+    }
+
+    //panels
 	using namespace esguid;
 	std::vector<VertexData> vbo1;
     //PushRect(vbo1, 0, 0, client.x, client.y, cshadow);
@@ -97,27 +101,39 @@ void popup::refresh()
 	PushRect(vbo1, 0, client.y - r.y, client.x, r.y, cshadow);
 	PushRect(vbo1, client.x - r.x, r.y, r.x, r.h, cshadow);
     PushRect(vbo1, r.x, r.y, r.w, r.h, cpanel);
-	if (m_sel >= 0) {
-		//PushRect(vbo1, r.x, r.y, r.w, dh * m_sel, cpanel);
-		PushRect(vbo1, r.x, r.y + dh * m_sel, r.w, dh, cselect);
-        //PushRect(vbo1, r.x, r.y + dh * (m_sel + 1), r.w, dh * (m_items.size() - m_sel - 1), cpanel);
-	}
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbos[0].id);
-	glBufferData(GL_ARRAY_BUFFER, vbo1.size() * sizeof(VertexData), vbo1.data(), GL_STATIC_DRAW);
-	m_vbos[0].size = vbo1.size();
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[0].id);
+    glBufferData(GL_ARRAY_BUFFER, vbo1.size() * sizeof(VertexData), vbo1.data(), GL_STATIC_DRAW);
+    m_vbos[0].size = vbo1.size();
 
-	std::vector<VertexData> vbo2;
-	font font("normal", 14);
+    //selection + radios
+    std::vector<VertexData> vbo2;
+    if (m_highlighted >= 0) {
+        PushRect(vbo2, r.x, r.y + dh * m_highlighted, r.w, dh, cselect);
+    }
+    for (size_t i = 0; i < m_items.size(); ++i)
+    {
+        color cradio = i == m_sel ? cradio2 : cradio1;
+        PushRadio(vbo2, i == m_sel, r.x + r.w - 3.5*dpmm, r.y + i*dh + dh/2, 1.5*dpmm, cradio);
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
+    glBufferData(GL_ARRAY_BUFFER, vbo2.size() * sizeof(VertexData), vbo2.data(), GL_STATIC_DRAW);
+    m_vbos[1].size = vbo2.size();
+    m_vbos[1].scissor = r;
+
+    //labels
+    std::vector<VertexData> vbo3;
+	font font("normal", 13);
 	float df = MeasureText("test", font).y;
     for (size_t i = 0; i < m_items.size(); ++i)
 	{
-        PushText(vbo2, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2, m_items[i], font, ctext);
-		//PushRect(vbo2, r.x + 2 * dpmm, r.y + i*dh + (dh - df) / 2, r.w, dh - (dh - df) / 2, "white");
+        PushText(vbo3, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2, m_items[i], font, ctext);
+        //PushRect(vbo3, r.x + 2 * dpmm, r.y + i*dh + (dh - df) / 2, r.w, dh - (dh - df) / 2, "white");
 	}
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
-	glBufferData(GL_ARRAY_BUFFER, vbo2.size() * sizeof(VertexData), vbo2.data(), GL_STATIC_DRAW);
-	m_vbos[1].size = vbo2.size();
-	m_vbos[1].texture = font.texture();
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[2].id);
+	glBufferData(GL_ARRAY_BUFFER, vbo3.size() * sizeof(VertexData), vbo3.data(), GL_STATIC_DRAW);
+	m_vbos[2].size = vbo3.size();
+	m_vbos[2].texture = font.texture();
+    m_vbos[2].scissor = r;
 }
 
 }

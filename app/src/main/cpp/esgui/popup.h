@@ -22,6 +22,8 @@ public:
 		return *this;
 	}
 	const std::vector<std::string>& items() const { return m_items; }
+	popup& selection(int sel) { m_sel = sel; return* this; }
+	int selection() const { return m_sel; }
 	void refresh();
 	void touch(action act, const point& p);
 	void exec();    
@@ -35,6 +37,7 @@ private:
 
 	std::vector<std::string> m_items;
 	int m_sel;
+	int m_highlighted;
 	event<void(int)> m_on_popup;
 };
 

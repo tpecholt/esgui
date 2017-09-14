@@ -4,6 +4,7 @@
 #include "esgui/app.h"
 #include "esgui/label.h"
 #include "esgui/popup.h"
+#include "esgui/button.h"
 #include "esgui/layout.h"
 #include <algorithm>
 
@@ -76,7 +77,9 @@ void init_controls()
         if (idx < 0)
             return;
         pop3->selection(idx);
-        buts[2]->text(to_upper(pop3->items()[idx]));
+        std::string name = to_upper(pop3->items()[idx]);
+        buts[2]->text(name);
+        app::get().toast(name + " was selected");
     });
 
     buts[0]->on_click([=]{
@@ -134,6 +137,13 @@ void init_controls()
         axis.push_back(lab);
     }
 
+    button* but = new button(page);
+    but->color("grey");
+    but->image("ic_launcher");
+    but->on_click([]{
+        app::get().toast("HAF!");
+    });
+
     page->layout(column(
         row(
                 item(buts[0], 1) | space(1) | item(buts[1], 1) | space(1) | item(buts[2], 1), milimeters(6)
@@ -161,7 +171,8 @@ void init_controls()
         row(
                 item(axis[0], 1.5) | item(axis[1], 1) | item(axis[2], 1) | item(axis[3], 1) |
                 item(axis[4], 1) | item(axis[5], 1) | item(axis[6], 1) | item(axis[7], 0)
-        )
+        ) |
+        but
     ));
 }
 

@@ -2,71 +2,103 @@
 #include "impl.h"
 #include <jni.h>
 
-namespace android
-{
+namespace android {
 
-struct ThreadEnv
-{
-	JavaVM* jvm;
-	JNIEnv* env;
-	ThreadEnv(JavaVM* vm)
-		: jvm(vm), env(nullptr)
-	{
-		if (jvm)
-			jvm->AttachCurrentThread(&env, nullptr);
-	}
-	~ThreadEnv()
-	{
-		if (jvm)
-			jvm->DetachCurrentThread();
-	}
+struct ThreadEnv {
+    JavaVM *jvm;
+    JNIEnv *env;
+
+    ThreadEnv(JavaVM *vm)
+            : jvm(vm), env(nullptr) {
+        if (jvm)
+            jvm->AttachCurrentThread(&env, nullptr);
+    }
+
+    ~ThreadEnv() {
+        if (jvm)
+            jvm->DetachCurrentThread();
+    }
 };
 
-static JavaVM* jvm;
+static JavaVM *jvm;
 
-JNIEnv* GetEnv()
-{
-	static thread_local ThreadEnv e(jvm);
-	return e.env;
+JNIEnv *GetEnv() {
+    static thread_local ThreadEnv e(jvm);
+    return e.env;
 }
 
 extern "C"
-JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
-{
-	LOGI("JNI_OnLoad");
-	jvm = vm;
-	/*if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK) 
-		return -1;	*/
-	return JNI_VERSION_1_6; /* the required JNI version */
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
+    LOGI("JNI_OnLoad");
+    jvm = vm;
+    /*if (vm->GetEnv((void**)&env, JNI_VERSION_1_6) != JNI_OK)
+        return -1;	*/
+    return JNI_VERSION_1_6; /* the required JNI version */
 }
 
-int CreateFontAtlas(const char* face, bool bold, bool italic, float* spacing, float* ascent, float* descent)
+int CreateFontAtlas(const char *face, bool bold, bool italic, float *spacing, float *ascent,
+                    float *descent) {
+    JNIEnv *env = GetEnv();
+    if (!env)
+        return 0;
+    jclass cls = env->FindClass("com/tope/esgui/core");
+    if (!cls)
+        return 0;
+    jmethodID mid = env->GetStaticMethodID(cls, "createFontAtlas", "(Ljava/lang/String;ZZ)I");
+    if (!mid)
+        return 0;
+    jstring jface = env->NewStringUTF(face);
+    jboolean jbold = bold;
+    jboolean jitalic = italic;
+    int texture = env->CallStaticIntMethod(cls, mid, jface, jbold, jitalic);
+    mid = env->GetStaticMethodID(cls, "getFontSpacing", "(Ljava/lang/String;ZZ)[F");
+    if (!mid)
+        return 0;
+    jfloatArray arr = (jfloatArray) env->CallStaticObjectMethod(cls, mid, jface, jbold, jitalic);
+    jfloat *data = env->GetFloatArrayElements(arr, 0);
+    int size = esguid::FONT_ATLAS_COLS * esguid::FONT_ATLAS_COLS;
+    *ascent = data[size - 2];
+    *descent = data[size - 1];
+    for (int i = 0; i < size - 2; ++i)
+        spacing[i] = data[i];
+    env->ReleaseFloatArrayElements(arr, data, 0);
+    return texture;
+}
+
+int LoadTexture(const char* uri, float& w, float& h)
 {
-	JNIEnv* env = GetEnv();
-	if (!env)
-		return 0;
-	jclass cls = env->FindClass("com/tope/esgui/core");
-	if (!cls)
-		return 0;
-	jmethodID mid = env->GetStaticMethodID(cls, "createFontAtlas", "(Ljava/lang/String;ZZ)I");
-	if (!mid)
-		return 0;
-	jstring jface = env->NewStringUTF(face);
-	jboolean jbold = bold;
-	jboolean  jitalic = italic;
-	int texture = env->CallStaticIntMethod(cls, mid, jface, jbold, jitalic);
-	mid = env->GetStaticMethodID(cls, "getFontSpacing", "(Ljava/lang/String;ZZ)[F");
-	if (!mid)
-		return 0;
-	jfloatArray arr = (jfloatArray)env->CallStaticObjectMethod(cls, mid, jface, jbold, jitalic);
-	jfloat *data = env->GetFloatArrayElements(arr, 0);
-	int size = esguid::FONT_ATLAS_COLS * esguid::FONT_ATLAS_COLS;
-	*ascent = data[size - 2];
-	*descent = data[size - 1];
-	for (int i = 0; i < size - 2; ++i)
-		spacing[i] = data[i];
-	env->ReleaseFloatArrayElements(arr, data, 0);
-	return texture;
+    JNIEnv *env = GetEnv();
+    if (!env)
+        return 0;
+    jclass cls = env->FindClass("com/tope/esgui/MainActivity");
+    if (!cls)
+        return 0;
+    jmethodID mid = env->GetStaticMethodID(cls, "loadTexture", "(Ljava/lang/String;)[I");
+    if (!mid)
+        return 0;
+    jstring juri = env->NewStringUTF(uri);
+    jintArray arr = (jintArray)env->CallStaticObjectMethod(cls, mid, juri);
+    jint* data = env->GetIntArrayElements(arr, 0);
+    int texture = data[0];
+    w = data[1];
+    h = data[2];
+    env->ReleaseIntArrayElements(arr, data, 0);
+    return texture;
+}
+
+void ToastMessage(const char *msg)
+{
+    JNIEnv* env = GetEnv();
+    if (!env)
+        return;
+    jclass cls = env->FindClass("com/tope/esgui/MainActivity");
+    if (!cls)
+        return;
+    jmethodID mid = env->GetStaticMethodID(cls, "toastMessage", "(Ljava/lang/String;)V");
+    if (!mid)
+        return;
+    jstring jmsg = env->NewStringUTF(msg);
+    env->CallStaticVoidMethod(cls, mid, jmsg);
 }
 
 std::pair<float, float> GetScreenSize()

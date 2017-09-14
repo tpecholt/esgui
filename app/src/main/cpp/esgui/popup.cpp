@@ -16,7 +16,7 @@ void popup::exec()
 	m_rect = { 0, 0, client.x, client.y };
 	m_highlighted = -1;
     m_scroll = 0;
-	refresh();
+    refresh();
 	visible(true);
 }
 
@@ -28,23 +28,30 @@ void popup::touch(action act, const point& p)
 	switch (act) {
 		case action::down:
 			if (r.contains(p)) {
-                m_last_down = p;
-                m_last_scroll = m_scroll;
+                m_last_p = p;
+                m_moving = false;
+                m_highlighted = idx;
                 refresh();
 			}
 			break;
         case action ::move:
-            if (std::abs(p.y - m_last_down.y) < 10)
-                break;
-            m_scroll = m_last_scroll + p.y - m_last_down.y;
+            if (!m_moving) {
+                if (std::abs(p.y - m_last_p.y) < 10)
+                    break;
+                m_highlighted = -1;
+                refresh();
+            }
+            m_moving = true;
+            m_scroll += p.y - m_last_p.y;
             m_scroll = std::min(m_scroll, 0.f);
             m_scroll = std::max(m_scroll, r.h - m_items.size() * dh);
-            m_last_scroll = m_scroll - p.y + m_last_down.y; //update m_last so that movement over limits won't count
-            for (size_t i = 1; i < m_vbos.size(); ++i)
-                m_vbos[i].scroll = {0, m_scroll};
+            m_last_p = p;
+            m_vbos[1].scroll = {0, m_scroll};
+            m_vbos[2].scroll = {0, m_scroll};
+            m_vbos[3].scroll = {0, -m_scroll * r.h / (m_items.size() * dh)};
             break;
 		case action::up: {
-            if (std::abs(p.y - m_last_down.y) > 10)
+            if (m_moving)
                 break;
             if (r.contains(p)) {
                 m_highlighted = idx;
@@ -85,9 +92,10 @@ esgui::rect popup::menu_rect() const
 
 void popup::refresh()
 {
-	const color cshadow(0.2, 0.2, 0.2, 0.8);
-	const color cpanel(0.3, 0.3, 0.3);
-	const color cselect(0.5, 0.5, 0.5);
+	const color cshadow(0, 0, 0, 0.8);
+	const color cpanel(0.25, 0.25, 0.25);
+    const color cselect(0.4, 0.4, 0.4);
+    const color cbar = cselect;
     const color ctext(1, 1, 1);
     const color cradio1(0.7, 0.7, 0.7);
     const color cradio2(0.4, 0.8, 0.8);
@@ -99,11 +107,12 @@ void popup::refresh()
 	float dh = menu_dh();
 	esgui::rect r = menu_rect();
 	
-	if (m_vbos.size() != 2) {
-		m_vbos.resize(3);
+	if (m_vbos.size() != 4) {
+		m_vbos.resize(4);
 		glGenBuffers(1, &m_vbos[0].id);
-		glGenBuffers(1, &m_vbos[1].id);
+        glGenBuffers(1, &m_vbos[1].id);
         glGenBuffers(1, &m_vbos[2].id);
+        glGenBuffers(1, &m_vbos[3].id);
     }
 
     //panels
@@ -119,15 +128,15 @@ void popup::refresh()
     glBufferData(GL_ARRAY_BUFFER, vbo1.size() * sizeof(VertexData), vbo1.data(), GL_STATIC_DRAW);
     m_vbos[0].size = vbo1.size();
 
-    //selection + radios
+    //radios + highlight
     std::vector<VertexData> vbo2;
     if (m_highlighted >= 0) {
-        PushRect(vbo2, r.x, r.y + dh * m_highlighted /*+ m_scroll*/, r.w, dh, cselect);
+        PushRect(vbo2, r.x, r.y + dh * m_highlighted, r.w, dh, cselect);
     }
     for (size_t i = 0; i < m_items.size(); ++i)
     {
         color cradio = i == m_sel ? cradio2 : cradio1;
-        PushRadio(vbo2, i == m_sel, r.x + r.w - 3.5*dpmm, r.y + i*dh + dh/2 /*+ m_scroll*/, 1.5*dpmm, cradio);
+        PushRadio(vbo2, i == m_sel, r.x + r.w - 4*dpmm, r.y + i*dh + dh/2, 1.5*dpmm, cradio);
     }
     glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
     glBufferData(GL_ARRAY_BUFFER, vbo2.size() * sizeof(VertexData), vbo2.data(), GL_STATIC_DRAW);
@@ -141,7 +150,7 @@ void popup::refresh()
 	float df = MeasureText("test", font).y;
     for (size_t i = 0; i < m_items.size(); ++i)
 	{
-        PushText(vbo3, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2 /*+ m_scroll*/, m_items[i], font, ctext);
+        PushText(vbo3, r.x + 2*dpmm, r.y + i*dh + (dh-df)/2, m_items[i], font, ctext);
         //PushRect(vbo3, r.x + 2 * dpmm, r.y + i*dh + (dh - df) / 2, r.w, dh - (dh - df) / 2, "white");
 	}
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbos[2].id);
@@ -150,6 +159,18 @@ void popup::refresh()
 	m_vbos[2].texture = font.texture();
     m_vbos[2].scissor = r;
     m_vbos[2].scroll = {0, m_scroll};
+
+    //bar
+    if (m_items.size() * dh > r.h) {
+        std::vector<VertexData> vbo;
+        double h = r.h*r.h / (m_items.size() * dh);
+        PushRect(vbo, r.x + r.w - 0.7*dpmm, r.y, 0.7*dpmm, h, cbar);
+        glBindBuffer(GL_ARRAY_BUFFER, m_vbos[3].id);
+        glBufferData(GL_ARRAY_BUFFER, vbo.size() * sizeof(VertexData), vbo.data(), GL_STATIC_DRAW);
+        m_vbos[3].size = vbo.size();
+        m_vbos[3].scissor = r;
+        m_vbos[3].scroll = {0, -m_scroll * r.h / (m_items.size() * dh)};
+    }
 }
 
 }

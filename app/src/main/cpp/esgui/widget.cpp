@@ -10,6 +10,12 @@ widget::widget(container* cont)
 	cont->register_(this);
 }
 
+widget::~widget()
+{
+    for (auto& vbo : m_vbos)
+        glDeleteBuffers(1, &vbo.id);
+}
+
 void widget::rect(const esgui::rect& r)
 {
 	if (m_rect == r) //layout optimization

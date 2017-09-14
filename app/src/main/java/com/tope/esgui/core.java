@@ -71,23 +71,9 @@ class core
 		} catch (Exception e) {
 			e.printStackTrace();
 		}*/
-		
-		Matrix matrix = new Matrix();
-		matrix.postScale(1, -1, bitmap.getWidth()/2, bitmap.getHeight()/2);
-		Bitmap bmp = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-		bitmap.recycle();
-		
-		//Use the Android GLUtils to specify a two-dimensional texture image from our bitmap
-		int[] hTex = new int[1];
-		GLES20.glGenTextures(1, hTex, 0);
-		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, hTex[0]);
-		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
-		GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp, 0);
 
-		bmp.recycle();
+		int[] hTex = createTexture(bitmap);
+		bitmap.recycle();
 		return hTex[0];
 	}
 
@@ -113,5 +99,25 @@ class core
 			ret[i] = w / FONT_ATLAS_CELL_SIZE;
 		}
 		return ret;
+	}
+
+	public static int[] createTexture(Bitmap bmp)
+	{
+		Matrix matrix = new Matrix();
+		matrix.postScale(1, -1, bmp.getWidth()/2, bmp.getHeight()/2);
+		Bitmap bmp2 = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
+
+		int[] hTex = new int[3];
+		hTex[1] = bmp2.getWidth();
+		hTex[2] = bmp2.getHeight();
+		GLES20.glGenTextures(1, hTex, 0);
+		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, hTex[0]);
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
+		GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp2, 0);
+		bmp2.recycle();
+		return hTex;
 	}
 }

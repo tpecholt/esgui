@@ -156,6 +156,20 @@ int app::screen_dpi()
 	return m_dpi;
 }
 
+int app::texture(const std::string& uri, esgui::size& siz)
+{
+	auto it = m_textures.find(uri);
+	if (it != m_textures.end()) {
+		siz = it->second.size;
+		return it->second.texture;
+	}
+	TextureData tex;
+	tex.texture = android::LoadTexture(uri.c_str(), tex.size.x, tex.size.y);
+	m_textures[uri] = tex;
+	siz = tex.size;
+	return tex.texture;
+}
+
 int app::font_texture(const std::string& face, int style)
 {
 	auto it = std::find_if(m_fonts.begin(), m_fonts.end(), [&](const decltype(m_fonts)::value_type& data) {
@@ -179,6 +193,11 @@ const font_metrics& app::font_metrics(font f)
 	if (it == m_fonts.end())
 		return tmp;
 	return it->second.metrics;
+}
+
+void app::toast(const std::string& msg)
+{
+    android::ToastMessage(msg.c_str());
 }
 
 void app::set_viewport(int width, int height)

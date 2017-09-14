@@ -36,11 +36,13 @@ private:
 	esgui::rect menu_rect() const;
 
 	std::vector<std::string> m_items;
-	int m_sel;
-	int m_highlighted;
-    float m_scroll, m_last_scroll;
-	esgui::point m_last_down;
 	event<void(int)> m_on_popup;
+	int m_sel;
+
+	int m_highlighted;
+    float m_scroll;
+	esgui::point m_last_p;
+	bool m_moving;
 };
 
 }

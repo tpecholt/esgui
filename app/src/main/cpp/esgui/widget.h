@@ -13,6 +13,7 @@ class widget : public window
 {
 public:
 	widget(container* c);
+	~widget();
 	
 	void rect(const esgui::rect& r);
 	const esgui::rect& rect() const { return m_rect; }

@@ -8,12 +8,12 @@ void PushRect(std::vector<VertexData>& vbo, float x, float y, float w, float h, 
 {
 	size_t size = vbo.size();
 	vbo.reserve(vbo.size() + 6);
-	vbo.push_back(VertexData{ x, y, c });
-	vbo.push_back(VertexData{ x, y + h, c });
-	vbo.push_back(VertexData{ x + w, y + h, c });
+	vbo.push_back(VertexData{ x, y, 0, 1, c });
+	vbo.push_back(VertexData{ x, y + h, 0, 0, c });
+	vbo.push_back(VertexData{ x + w, y + h, 1, 0, c });
 	vbo.push_back(vbo[size]);
 	vbo.push_back(vbo[size + 2]);
-	vbo.push_back(VertexData{ x + w, y, c });
+	vbo.push_back(VertexData{ x + w, y, 1, 1, c });
 }
 
 void PushRadio(std::vector<VertexData>& vbo, bool on, float x1, float y1, float r, const esgui::color& c)

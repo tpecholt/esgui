@@ -14,7 +14,7 @@ public class MainActivity extends com.tope.esgui.MainActivity
     public void onCreate(Bundle savedInstanceState) {
         // full screen & full brightness
         requestWindowFeature (Window.FEATURE_NO_TITLE);
-        
+        init(getResources());
         super.onCreate(savedInstanceState);
     }	
 }

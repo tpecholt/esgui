@@ -16,6 +16,38 @@ void PushRect(std::vector<VertexData>& vbo, float x, float y, float w, float h, 
 	vbo.push_back(VertexData{ x + w, y, 1, 1, c });
 }
 
+void PushPie(std::vector<VertexData>& vbo, float x, float y, float r, float start, float end, const esgui::color& c)
+{
+	float lastxx = x + r*cos(start);
+	float lastyy = y - r*sin(start);
+    const float da = 10*M_PI/180;
+	for (start += da; start < end; start += da) {
+		float xx = x + r*cos(start);
+		float yy = y - r*sin(start);
+		vbo.push_back(VertexData{ x, y, c });
+		vbo.push_back(VertexData{ lastxx, lastyy, c });
+		vbo.push_back(VertexData{ xx, yy, c });
+		lastxx = xx;
+		lastyy = yy;
+	}
+	float xx = x + r*cos(end);
+	float yy = y - r*sin(end);
+	vbo.push_back(VertexData{ x, y, c });
+	vbo.push_back(VertexData{ lastxx, lastyy, c });
+	vbo.push_back(VertexData{ xx, yy, c });
+}
+
+void PushRoundRect(std::vector<VertexData>& vbo, float x, float y, float w, float h, float r, const esgui::color& c)
+{
+	PushRect(vbo, x + r, y, w - 2 * r, h, c);
+    PushPie(vbo, x + w - r, y + r, r, 0, M_PI_2, c);
+	PushRect(vbo, x + w - r, y + r, r, h - 2 * r, c);
+    PushPie(vbo, x + w - r, y + h - r, r, -M_PI_2, 0, c);
+    PushPie(vbo, x + r, y + h - r, r, M_PI, 1.5*M_PI, c);
+    PushRect(vbo, x, y + r, r, h - 2 * r, c);
+    PushPie(vbo, x + r, y + r, r, M_PI_2, M_PI, c);
+}
+
 void PushRadio(std::vector<VertexData>& vbo, bool on, float x1, float y1, float r, const esgui::color& c)
 {
 	const float da = 20*M_PI/180.0;
@@ -37,17 +69,7 @@ void PushRadio(std::vector<VertexData>& vbo, bool on, float x1, float y1, float 
 	}
     if (on) {
         rm = 0.5 * r;
-        lastcs = 1;
-        lastsn = 0;
-        for (float a = da; a < 2.01 * M_PI; a += da) {
-            float cs = cos(a);
-            float sn = -sin(a);
-            vbo.push_back({x1, y1, c});
-            vbo.push_back({x1 + rm * lastcs, y1 + rm * lastsn, c});
-            vbo.push_back({x1 + rm * cs, y1 + rm * sn, c});
-            lastcs = cs;
-            lastsn = sn;
-        }
+        PushPie(vbo, x1, y1, rm, 0, 2*M_PI, c);
     }
 }
 

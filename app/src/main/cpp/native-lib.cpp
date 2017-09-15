@@ -40,16 +40,14 @@ void on_axis(label* lab)
 void init_controls()
 {
     container *page = new container();
-    std::vector<label*> buts;
+    std::vector<button*> buts;
     for (size_t i = 0; i < 3; ++i) {
-        label* but = new label(page);
+        button* but = new button(page);
         but->color("dark grey");
         but->text_color("white");
         but->font({"normal", 9, font::bold});
-        but->alignment(hcenter | vcenter);
         buts.push_back(but);
     }
-    size but_size(0, 100);
     buts[0]->text("BITCOIN");
     buts[1]->text("USD");
     buts[2]->text("GDAX");
@@ -138,7 +136,7 @@ void init_controls()
     }
 
     button* but = new button(page);
-    but->color("grey");
+    but->color("dark grey");
     but->image("ic_launcher");
     but->on_click([]{
         app::get().toast("HAF!");
@@ -172,7 +170,7 @@ void init_controls()
                 item(axis[0], 1.5) | item(axis[1], 1) | item(axis[2], 1) | item(axis[3], 1) |
                 item(axis[4], 1) | item(axis[5], 1) | item(axis[6], 1) | item(axis[7], 0)
         ) |
-        but
+        row(but | stretch())
     ));
 }
 

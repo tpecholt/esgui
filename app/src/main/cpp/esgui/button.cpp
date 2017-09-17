@@ -9,7 +9,7 @@ button::button(container* cont, int id)
 	: widget(cont, id), m_style(flat), m_texture()
 {
 	m_font = app::get().default_font();
-    m_text_color = "white";
+    m_text_color = app::get().theme().button_text;
 }
 
 void button::style(enum style s)

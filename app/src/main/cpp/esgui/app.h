@@ -7,6 +7,7 @@
 #include <array>
 #include <map>
 #include "app_bar.h"
+#include "theme.h"
 
 namespace esgui
 {
@@ -38,6 +39,8 @@ public:
 	int screen_dpi();
 	void toast(const std::string& msg);
     int status_bar_height();
+    void theme(const esgui::theme& t);
+    const esgui::theme& theme() const { return m_theme; }
 
     void set_viewport(int w, int h);
 	void touch(action action, float x, float y);	
@@ -69,6 +72,7 @@ private:
 	size m_client_size;
 	int m_dpi;
     int m_status_bar_height;
+    esgui::theme m_theme;
 };
 
 }

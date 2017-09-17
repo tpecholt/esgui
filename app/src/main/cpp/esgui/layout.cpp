@@ -48,10 +48,16 @@ void layout::rect(const esgui::rect& r)
 	refresh();
 }
 
-void layout::margin(float m)
+void layout::hmargin(float m)
 {
-	m_margin = m;
+	m_hmargin = m;
 	refresh();
+}
+
+void layout::vmargin(float m)
+{
+    m_vmargin = m;
+    refresh();
 }
 
 void layout::separation(float m)
@@ -64,22 +70,31 @@ void layout::separation(float m)
 
 esgui::size row_layout::min_size() const
 {
+    float dpmm = esgui::app::get().screen_dpi() / 25.4;
     check_err();
-    esgui::size siz;
+    esgui::size siz{2*m_hmargin*dpmm, 2*m_vmargin};
+    int n = 0;
     for (const item& i : m_items) {
+        if (!i.visible())
+            continue;
         esgui::size s = i.min_size(true);
         siz.x += s.x;
         siz.y = std::max(siz.y, s.y);
+        ++n;
     }
+    if (n)
+        siz.x += (n-1) * m_sep * dpmm;
     check_err();
     return siz;
 }
 
 void row_layout::refresh()
 {
+    if (m_rect.invalid())
+        return;
     float dpmm = esgui::app::get().screen_dpi() / 25.4;
-    float sum_min = 2 * m_margin * dpmm;
-    float sum_fixed = 2 * m_margin * dpmm;
+    float sum_min = 2 * m_hmargin * dpmm;
+    float sum_fixed = 2 * m_hmargin * dpmm;
     float sum_prop = 0;
     check_err();
 	int n = 0;
@@ -100,7 +115,9 @@ void row_layout::refresh()
 	}
     check_err();
     bool overflow = sum_min > m_rect.w;
-    float x = m_rect.x + m_margin * dpmm;
+    float x = m_rect.x + m_hmargin * dpmm;
+    float y = m_rect.y + m_vmargin * dpmm;
+    float h = m_rect.h - 2 * m_vmargin * dpmm;
 	float prop_w = m_rect.w - sum_fixed;
 	for (item& i : m_items)
 	{
@@ -109,7 +126,7 @@ void row_layout::refresh()
 		float w = i.min_size(true).x;
 		if (!overflow && i.proportion())
 			w = std::max(w, i.proportion() * prop_w / sum_prop);
-		i.rect({ x, m_rect.y, w, m_rect.h });
+		i.rect({ x, y, w, h });
 		x += w;
         if (n > 1)
             x += m_sep * dpmm;
@@ -123,21 +140,30 @@ void row_layout::refresh()
 esgui::size column_layout::min_size() const
 {
     check_err();
-    esgui::size siz;
+    float dpmm = esgui::app::get().screen_dpi() / 25.4;
+    esgui::size siz{2*m_hmargin*dpmm, 2*m_vmargin*dpmm};
+    int n = 0;
     for (const item& i : m_items) {
+        if (!i.visible())
+            continue;
         esgui::size s = i.min_size(false);
         siz.x = std::max(siz.x, s.x);
         siz.y += s.y;
+        ++n;
     }
+    if (n)
+        siz.y += (n-1) * m_sep * dpmm;
     check_err();
     return siz;
 }
 
 void column_layout::refresh()
 {
+    if (m_rect.invalid())
+        return;
     float dpmm = esgui::app::get().screen_dpi() / 25.4;
-    float sum_min = 2 * m_margin * dpmm;
-    float sum_fixed = 2 * m_margin * dpmm;
+    float sum_min = 2 * m_vmargin * dpmm;
+    float sum_fixed = 2 * m_vmargin * dpmm;
     float sum_prop = 0;
     check_err();
     int n = 0;
@@ -158,7 +184,9 @@ void column_layout::refresh()
     }
     check_err();
     bool overflow = sum_min > m_rect.h;
-	float y = m_rect.y + m_margin * dpmm;
+    float x = m_rect.x + m_hmargin * dpmm;
+	float y = m_rect.y + m_vmargin * dpmm;
+    float w = m_rect.w - 2 * m_hmargin * dpmm;
 	float prop_h = m_rect.h - sum_fixed;
 	for (item& i : m_items)
 	{
@@ -168,7 +196,7 @@ void column_layout::refresh()
 		if (!overflow && i.proportion())
 			h = std::max(h, i.proportion() * prop_h / sum_prop);
         check_err();
-		i.rect({ m_rect.x, y, m_rect.w, h });
+		i.rect({ x, y, w, h });
         check_err();
 		y += h;
         if (n > 1)

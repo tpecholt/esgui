@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -126,5 +127,16 @@ public class MainActivity extends Activity {
             e.printStackTrace();
             return new int[]{0, 0, 0};
         }
+    }
+
+    public static void showKeyboard(boolean b)
+    {
+        sActivity.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                InputMethodManager imm = (InputMethodManager) sActivity.getSystemService(sActivity.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+            }
+        });
     }
 }

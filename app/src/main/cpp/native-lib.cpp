@@ -7,6 +7,7 @@
 #include "esgui/button.h"
 #include "esgui/layout.h"
 #include "esgui/app_bar.h"
+#include "esgui/edit_text.h"
 #include <algorithm>
 
 using namespace esgui;
@@ -41,17 +42,19 @@ void on_axis(label* lab)
 void init_controls()
 {
     app_bar* app = new app_bar;
-    app->style(app_bar::menu_button | app_bar::left_side_bar);
+    app->style(app_bar::back_button | app_bar::menu_button);
     app->text("Bingo");
-    app->color({0.8, 0.3, 0.35});
+    //app->color({0.8, 0.3, 0.35});
     app->menu()->items({"Search", "Manage calendars", "Settings"});
+    app->on_back([]{ app::get().toast("back"); });
+    app->on_menu([](int idx){ app::get().toast("menu " + to_string(idx)); });
 
     container *page = new container();
     std::vector<button*> buts;
     for (size_t i = 0; i < 3; ++i) {
         button* but = new button(page);
-        but->color("dark grey");
-        but->text_color("white");
+        //but->color("dark grey");
+        //but->text_color("white");
         but->font({"normal", 9, font::bold});
         buts.push_back(but);
     }
@@ -100,8 +103,8 @@ void init_controls()
     std::vector<label*> labs;
     for (size_t i = 0; i < 4; ++i) {
         label* lab = new label(page);
-        lab->color("black");
-        lab->text_color("white");
+        //lab->color("black");
+        //lab->text_color("white");
         lab->font({"normal", 10, font::bold});
         labs.push_back(lab);
     }
@@ -117,7 +120,7 @@ void init_controls()
     for (size_t i = 0; i < 2*4; ++i) {
         int odd = i & 1;
         label* lab = new label(page);
-        lab->color("black");
+        //lab->color("black");
         lab->text_color(odd ? "white" : "grey");
         lab->font({"normal", 10, odd ? font::bold : 0});
         labs.push_back(lab);
@@ -135,7 +138,7 @@ void init_controls()
     for (size_t i = 0; i < 8; ++i) {
         label* lab = new label(page);
         lab->text(LBL[i]);
-        lab->color("black");
+        //lab->color("black");
         lab->text_color(i == last_axis ? "orange" : "grey");
         lab->font({"normal", 10, font::bold});
         lab->on_click([=]{ on_axis(lab); });
@@ -144,15 +147,24 @@ void init_controls()
 
     button* but = new button(page);
     but->style(button::round);
-    but->color("dark grey");
+    //but->color("dark grey");
     but->icon("@mipmap/ic_launcher");
     but->on_click([]{
         app::get().toast("HAF!");
     });
 
-    page->layout(column(space(1) |
+    std::vector<edit_text*> edits;
+    for (int i = 0; i < 3; ++i)
+        edits.push_back(new edit_text(page));
+    edits[0]->text("Tomas p");
+    edits[1]->hint("Job title");
+    label* org = new label(page);
+    org->text("Organization");
+    edits[2]->hint("Department");
+
+    page->layout(column(
         row(
-                item(buts[0], 1) | item(buts[1], 1) | item(buts[2], 1), fixed(6).separation(1)
+                item(buts[0], 1) | item(buts[1], 1) | item(buts[2], 1), separation(1)
         ) |
         row(
                 column(
@@ -165,20 +177,28 @@ void init_controls()
                         item(labs[4]) |
                         labs[6] |
                         labs[8] |
-                        labs[10]
+                        labs[10],
+                        separation(1)
                 ) |
                 column(
                         item(labs[5]) |
                         labs[7] |
                         labs[9] |
-                        labs[11]
+                        labs[11],
+                        separation(1)
                 )
         ) |
         row(
                 item(axis[0], 1.5) | item(axis[1], 1) | item(axis[2], 1) | item(axis[3], 1) |
                 item(axis[4], 1) | item(axis[5], 1) | item(axis[6], 1) | item(axis[7], 0)
         ) |
-        row(but | stretch())
+        row(stretch() | but | stretch()) |
+        item(edits[0]) |
+        space(2) |
+        org |
+        edits[1] |
+        edits[2],
+        hmargin(1).vmargin(1).separation(1)
     ));
 }
 

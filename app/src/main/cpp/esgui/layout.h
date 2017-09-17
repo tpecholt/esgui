@@ -22,10 +22,10 @@ struct layout_opts
 {
     float m_fixed;
     float m_proportional;
-    float m_margin;
+    float m_hmargin, m_vmargin;
     float m_separation;
 
-    layout_opts() : m_fixed(), m_proportional(), m_margin(), m_separation()
+    layout_opts() : m_fixed(), m_proportional(), m_hmargin(), m_vmargin(), m_separation()
     {}
     layout_opts& fixed(float f) {
         m_fixed = f; return *this;
@@ -33,8 +33,11 @@ struct layout_opts
     layout_opts& proportional(float f) {
         m_proportional = f; return *this;
     }
-    layout_opts& margin(float f) {
-        m_margin = f; return *this;
+    layout_opts& hmargin(float f) {
+        m_hmargin = f; return *this;
+    }
+    layout_opts& vmargin(float f) {
+        m_vmargin = f; return *this;
     }
     layout_opts& separation(float f) {
         m_separation = f; return *this;
@@ -47,8 +50,11 @@ inline layout_opts fixed(float f) {
 inline layout_opts proportional(float f) {
     return layout_opts().proportional(f);
 }
-inline layout_opts margin(float f) {
-    return layout_opts().margin(f);
+inline layout_opts hmargin(float f) {
+    return layout_opts().hmargin(f);
+}
+inline layout_opts vmargin(float f) {
+    return layout_opts().vmargin(f);
 }
 inline layout_opts separation(float f) {
     return layout_opts().separation(f);
@@ -149,7 +155,7 @@ public:
 	using iterator = std::vector<item>::iterator;
 
 	layout()
-		: m_visible(true), m_margin(), m_sep()
+		: m_visible(true), m_hmargin(), m_vmargin(), m_sep()
 	{}
 	layout(std::vector<item>&& items)
 		: layout()
@@ -171,7 +177,8 @@ public:
 	bool visible() const { return m_visible; }
 	void rect(const esgui::rect& r);
 	const esgui::rect& rect() const { return m_rect; }
-	void margin(float m);
+	void hmargin(float m);
+    void vmargin(float m);
 	void separation(float m);
 	virtual esgui::size min_size() const = 0;
 	virtual void refresh() = 0;
@@ -180,7 +187,7 @@ protected:
 	std::vector<item> m_items;
 	esgui::rect m_rect;	
 	bool m_visible;
-	float m_margin, m_sep;
+	float m_hmargin, m_vmargin, m_sep;
 };
 
 //-------------------------------------------------------------------
@@ -201,7 +208,8 @@ inline item column(std::vector<item>&& items, float prop = 0)
 inline item column(std::vector<item>&& items, const layout_opts& opts)
 {
     layout* lay = new column_layout(std::move(items));
-    lay->margin(opts.m_margin);
+    lay->hmargin(opts.m_hmargin);
+    lay->vmargin(opts.m_vmargin);
     lay->separation(opts.m_separation);
     return item(lay).proportion(opts.m_proportional).space(opts.m_fixed);
 }
@@ -224,7 +232,8 @@ inline item row(std::vector<item>&& items, float prop = 0)
 inline item row(std::vector<item>&& items, const layout_opts& opts)
 {
     layout* lay = new row_layout(std::move(items));
-    lay->margin(opts.m_margin);
+    lay->hmargin(opts.m_hmargin);
+    lay->vmargin(opts.m_vmargin);
     lay->separation(opts.m_separation);
     return item(lay).proportion(opts.m_proportional).space(opts.m_fixed);
 }

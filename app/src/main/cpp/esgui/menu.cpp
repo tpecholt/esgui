@@ -94,9 +94,9 @@ size menu::menu_size()
 
 void menu::refresh()
 {
-	const esgui::color cpanel(0.08, 0.13, 0.27);
-    const esgui::color cselect(0.4, 0.4, 0.4);
-    const esgui::color ctext(0.85, 0.85, 0.85);
+	const esgui::color cpanel = app::get().theme().background;
+    const esgui::color cselect = cpanel.lighter();
+    const esgui::color ctext = app::get().theme().text;
 
 	float dpmm = app::get().screen_dpi() / 25.4;
 	float dh = menu_dh();

@@ -130,6 +130,21 @@ void ToastMessage(const char *msg)
     env->CallStaticVoidMethod(cls, mid, jmsg);
 }
 
+
+void ShowKeyboard(bool b)
+{
+    JNIEnv* env = GetEnv();
+    if (!env)
+        return;
+    jclass cls = env->FindClass("com/tope/esgui/MainActivity");
+    if (!cls)
+        return;
+    jmethodID mid = env->GetStaticMethodID(cls, "showKeyboard", "(Z)V");
+    if (!mid)
+        return;
+    env->CallStaticVoidMethod(cls, mid, b);
+}
+
 std::pair<float, float> GetScreenSize()
 {
 	JNIEnv* env = GetEnv();

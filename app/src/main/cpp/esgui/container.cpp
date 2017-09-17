@@ -7,7 +7,7 @@ container::container(container* parent, int id)
 	: window(id), m_layout()
 {
 	m_layout = new row_layout({});
-    m_color = "black";
+    m_color = app::get().theme().background;
 	if (parent)
 		parent->register_(this);
 	else

@@ -75,6 +75,7 @@ app::app()
     m_dpi = 0;
     m_status_bar_height = 0;
     m_mvp = ortho2d(100, 100);
+    m_theme = get_theme("");
 }
 
 void app::init_rendering()
@@ -164,6 +165,15 @@ int app::screen_dpi()
 	if (!m_dpi)
 		m_dpi = android::GetDPI();
 	return m_dpi;
+}
+
+void app::theme(const esgui::theme& th)
+{
+    m_theme = th;
+    if (m_app_bar)
+        m_app_bar->refresh();
+    for (container* c : m_containers)
+        c->refresh();
 }
 
 const font& app::default_font()

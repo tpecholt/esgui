@@ -14,8 +14,10 @@ app_bar::app_bar()
 : container(nullptr, sid)
 {
     layout(column(
-            space(4) | row({})
+            space(4) | row({}) | space(1)
     ));
+    m_color = app::get().theme().app_bar;
+    android::SetDarkStatusBar(m_color.luminance() < 0.3);
 }
 
 size app_bar::min_size()
@@ -32,8 +34,7 @@ size app_bar::min_size()
 void app_bar::color(const esgui::color &c)
 {
     container::color(c);
-    bool dark = c.luminance() < 0.3;
-    android::SetDarkStatusBar(dark);
+    android::SetDarkStatusBar(c.luminance() < 0.3);
 }
 
 void app_bar::style(int s)
@@ -44,7 +45,7 @@ void app_bar::style(int s)
         m_style &= ~right_side_bar;
 
     esgui::layout* lay = layout()->begin()[1].layout();
-    lay->margin(2);
+    lay->hmargin(2);
     lay->separation(2);
     lay->clear();
     delete_children();
@@ -63,11 +64,10 @@ void app_bar::style(int s)
     }
 
     if (m_style & back_button) {
-        button *back = new button(this, back_button);
+        button *back = new button(this, id_back_button);
         back->color(color::transparent);
         back->text("back");
         back->icon("@drawable/ic_chevron_left", 0.75);
-        //back->on_click([&] { if (this->m_on_back) this->m_on_back(); });
         lay->push_back(item(back));
     }
 
@@ -76,7 +76,7 @@ void app_bar::style(int s)
 
     label *lab1 = new label(this, id_label1);
     lab1->color(color::transparent);
-    lab1->text_color("black");
+    lab1->text_color(app::get().theme().button_text);
     lab1->alignment(left | vcenter);
     lab1->font(lab1->font().make_bold());
     lay->push_back(item(lab1, 1));
@@ -85,7 +85,6 @@ void app_bar::style(int s)
         esgui::menu* m = new esgui::menu(this, id_menu);
         button *but = new button(this, menu_button);
         but->color(color::transparent);
-        but->text_color("black");
         but->icon("@drawable/ic_more_vert", 0.75);
         but->text("menu");
         but->on_click([=]{
@@ -98,12 +97,6 @@ void app_bar::style(int s)
         lay->push_back(item(bside));
 
     refresh();
-}
-
-void app_bar::menu_items(const std::vector<std::string> &items)
-{
-    esgui::menu* m = menu();
-    if (m) m->items(items);
 }
 
 void app_bar::text(const std::string &t)

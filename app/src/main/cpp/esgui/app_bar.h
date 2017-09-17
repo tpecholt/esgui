@@ -8,6 +8,7 @@
 #include "container.h"
 #include "layout.h"
 #include "menu.h"
+#include "button.h"
 
 namespace esgui {
 
@@ -28,15 +29,24 @@ public:
 
     void style(int style);
     container* side_bar() { return (container*)find_child(id_side_bar); }
-    menu* menu() { return (esgui::menu*)find_child(id_menu); }
+    esgui::menu* menu() { return (esgui::menu*)find_child(id_menu); }
     void text(const std::string&);
     void small_text(const std::string&);
-    void menu_items(const std::vector<std::string>& items);
 
-    /*template <class T>
-    void on_back(T&& fun) { m_on_back = std::forward<T>(fun); }
     template <class T>
-    void on_menu(T&& fun) { m_on_menu = std::forward<T>(fun); }*/
+    void on_back(T&& fun) {
+        button* but = (button*)find_child(id_back_button);
+        if (!but)
+            return;
+        but->on_click(std::forward<T>(fun));
+    }
+    template <class T>
+    void on_menu(T&& fun) {
+        esgui::menu* m = menu();
+        if (!m)
+            return;
+        m->on_menu(std::forward<T>(fun));
+    }
 
 private:
     enum id {

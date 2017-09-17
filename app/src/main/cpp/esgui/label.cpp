@@ -8,7 +8,8 @@ label::label(container* cont, int id)
 	: widget(cont, id)
 {
 	m_font = app::get().default_font();
-    m_text_color = "white";
+    m_text_color = app::get().theme().text;
+    m_color = color::transparent;
     m_alignment = left | top;
 }
 

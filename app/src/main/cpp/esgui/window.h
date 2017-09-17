@@ -71,6 +71,10 @@ struct color
 	constexpr color(float r, float g, float b, float a = 1) : r(r), g(g), b(b), a(a) {}
 	color(const char* name);
     float luminance() const { return 0.2126*r + 0.7152*g + 0.0722*b; }
+    color lighter() const {
+        float f = 1.4;
+        return {std::max(1.f, r*f), std::max(1.f, g*f), std::max(1.f, b*f), a};
+    }
 };
 
 struct font

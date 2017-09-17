@@ -18,4 +18,6 @@ void SetDarkStatusBar(bool dark);
 
 void ToastMessage(const char* msg);
 
+void ShowKeyboard(bool b);
+
 }

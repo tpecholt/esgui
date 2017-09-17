@@ -6,6 +6,8 @@ add_library( native-lib SHARED
              ${SRC_ESGUI}
              src/main/cpp/native-lib.cpp
              src/main/cpp/esgui/button.cpp
+             src/main/cpp/esgui/app_bar.cpp
+             src/main/cpp/esgui/menu.cpp
 )
 
 # Searches for a specified prebuilt library and stores the path as a

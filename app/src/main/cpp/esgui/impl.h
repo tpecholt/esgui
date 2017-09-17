@@ -41,6 +41,8 @@ void PushRadio(std::vector<VertexData>& vbo, bool on, float x, float y, float r,
 
 void PushText(std::vector<VertexData>& vbo, float x, float y, const std::string& label, const esgui::font& f, const esgui::color& clr);
 
+int SendBuffer(int id, const std::vector<VertexData>& vbo);
+
 esgui::size MeasureText(const std::string& label, const esgui::font& f);
 
 }

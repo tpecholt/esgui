@@ -4,42 +4,37 @@
 
 namespace esgui{
 
-class popup : public widget
+class menu : public widget
 {
 public:
-	popup(container*, int id = 0);
+	menu(container*, int id = 0);
 
+	const esgui::font& font() const;
 	template <class C>
-	popup& items(const C& items)
+	void items(const C& items)
 	{
 		m_items.assign(std::begin(items), std::end(items));
-		return *this;
 	}
-	popup& items(std::initializer_list<std::string> items)
+	void items(std::initializer_list<std::string> items)
 	{
 		m_items.assign(std::begin(items), std::end(items));
-		return *this;
 	}
 	const std::vector<std::string>& items() const { return m_items; }
-	popup& selection(int sel) { m_sel = sel; return* this; }
-	int selection() const { return m_sel; }
 	void refresh();
 	bool touch(action act, const point& p);
-	void exec();    
+	void exec(const point& p);
 	
 	template <class T>
-	void on_popup(T&& fun) { m_on_popup = std::forward<T>(fun); }	
+	void on_menu(T&& fun) { m_on_menu = std::forward<T>(fun); }
 
 private:
 	float menu_dh() const;
-	esgui::rect menu_rect() const;
+	size menu_size();
 
 	std::vector<std::string> m_items;
-	event<void(int)> m_on_popup;
-	int m_sel;
+    int m_highlighted;
+    event<void(int)> m_on_menu;
 
-	int m_highlighted;
-    float m_scroll;
 	esgui::point m_last_p;
 	bool m_moving;
 };

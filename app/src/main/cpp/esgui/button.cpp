@@ -1,56 +1,60 @@
 #include "button.h"
 #include "app.h"
+#include <cmath>
 
 namespace esgui
 {
 
-button::button(container* cont)
-	: widget(cont), m_image()
+button::button(container* cont, int id)
+	: widget(cont, id), m_style(flat), m_texture()
 {
 	m_font = app::get().default_font();
+    m_text_color = "white";
 }
 
-button& button::color(const esgui::color& c)
+void button::style(enum style s)
+{
+    m_style = s;
+    refresh();
+}
+
+void button::color(const esgui::color& c)
 {
 	m_color = c;
 	refresh();
-	return *this;
 }
 
-button& button::text_color(const esgui::color& c)
+void button::text_color(const esgui::color& c)
 {
 	m_text_color = c;
 	refresh();
-	return *this;
 }
 
-button& button::font(const esgui::font& f)
+void button::font(const esgui::font& f)
 {
 	m_font = f;
 	refresh();
-	return *this;
 }
 
-button& button::text(const std::string& l)
+void button::text(const std::string& l)
 {
     m_label = l;
-    m_image = 0;
     refresh();
-    return *this;
 }
 
-button& button::image(const std::string& uri)
+void button::icon(const std::string& uri, float scale)
 {
-    m_label.clear();
-	m_image = app::get().texture(uri, m_image_size);
+    m_texture = app::get().icon_texture(uri, m_texture_size);
+    m_texture_size.x *= scale;
+    m_texture_size.y *= scale;
 	refresh();
-	return *this;
 }
 
-void button::touch(action act, const point& p)
+bool button::touch(action act, const point& p)
 {
-	if (act == action::up && m_on_click)
+    if (act == action::up && m_on_click)
 		m_on_click();
+    return true;
 }
 
 void button::refresh()
@@ -66,22 +70,25 @@ void button::refresh()
     check_err();
     using namespace esguid;
 	std::vector<VertexData> vbo1;
-	PushRoundRect(vbo1, m_rect.x, m_rect.y, m_rect.w, m_rect.h, 0.5*dpmm, m_color);
-    check_err();
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbos[0].id);
-	glBufferData(GL_ARRAY_BUFFER, vbo1.size() * sizeof(VertexData), vbo1.data(), GL_STATIC_DRAW);
-    check_err();
-    m_vbos[0].size = vbo1.size();
+    switch (m_style) {
+        case flat:
+            PushRoundRect(vbo1, m_rect.x, m_rect.y, m_rect.w, m_rect.h, 0.5*dpmm, m_color);
+            break;
+        case round:
+            float r = std::min(m_rect.w, m_rect.h) / 2;
+            PushPie(vbo1, m_rect.x + m_rect.w/2, m_rect.y + m_rect.h/2, r, 0, 2*M_PI, m_color);
+            break;
+    }
+    m_vbos[0].size = SendBuffer(m_vbos[0].id, vbo1);
 
     std::vector<VertexData> vbo2;
-
-    if (m_image) {
+    if (m_texture) {
         PushRect(vbo2,
-                 m_rect.x + (m_rect.w - m_image_size.x) / 2,
-                 m_rect.y + (m_rect.h - m_image_size.y) / 2,
-                 m_image_size.x, m_image_size.y,
+                 m_rect.x + (m_rect.w - m_texture_size.x) / 2,
+                 m_rect.y + (m_rect.h - m_texture_size.y) / 2,
+                 m_texture_size.x, m_texture_size.y,
                  "white");
-        m_vbos[1].texture = m_image;
+        m_vbos[1].texture = m_texture;
     }
     else {
         size siz = esguid::MeasureText(m_label, m_font);
@@ -91,19 +98,14 @@ void button::refresh()
                  m_label, m_font, m_text_color);
         m_vbos[1].texture = m_font.texture();
     }
-    check_err();
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
-	glBufferData(GL_ARRAY_BUFFER, vbo2.size() * sizeof(VertexData), vbo2.data(), GL_STATIC_DRAW);
-    check_err();
-    m_vbos[1].size = vbo2.size();
-
+    m_vbos[1].size = SendBuffer(m_vbos[1].id, vbo2);
 }
 
 size button::min_size()
 {
     size siz;
-    if (m_image)
-        siz = m_image_size;
+    if (m_texture)
+        siz = m_texture_size;
     else
         siz = esguid::MeasureText(m_label, m_font);
     float dpmm = app::get().screen_dpi() / 25.4;

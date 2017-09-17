@@ -8,7 +8,7 @@ USAGE:
 column(
 	space() |
 	row(stretch(0.2) | item(label, 0.6) | stretch(0.2)) |
-	space() |
+	space(1) |
 	row(stretch() | button, 0.3) |
 	grid<2>(btn1 | btn2 | btn3 | btn4, 0.5)
 );
@@ -16,14 +16,45 @@ column(
 namespace esgui
 {
 
-struct milimeters
+class layout;
+
+struct layout_opts
 {
-    milimeters(float f) : val(f) {}
-	operator float() const { return val; }
-    float val;
+    float m_fixed;
+    float m_proportional;
+    float m_margin;
+    float m_separation;
+
+    layout_opts() : m_fixed(), m_proportional(), m_margin(), m_separation()
+    {}
+    layout_opts& fixed(float f) {
+        m_fixed = f; return *this;
+    }
+    layout_opts& proportional(float f) {
+        m_proportional = f; return *this;
+    }
+    layout_opts& margin(float f) {
+        m_margin = f; return *this;
+    }
+    layout_opts& separation(float f) {
+        m_separation = f; return *this;
+    }
 };
 
-class layout;
+inline layout_opts fixed(float f) {
+    return layout_opts().fixed(f);
+}
+inline layout_opts proportional(float f) {
+    return layout_opts().proportional(f);
+}
+inline layout_opts margin(float f) {
+    return layout_opts().margin(f);
+}
+inline layout_opts separation(float f) {
+    return layout_opts().separation(f);
+}
+
+//-----------------------------------------------------------
 
 class item
 {
@@ -36,20 +67,20 @@ public:
 	{
 		window(w).proportion(p);
 	}
-    item(esgui::window* w, milimeters mm)
+    item(esgui::window* w, const layout_opts& opts)
         : item()
     {
-        window(w).space(mm);
+        window(w).proportion(opts.m_proportional).space(opts.m_fixed);
     }
-    item(esgui::layout* l, float p)
+    item(esgui::layout* l, float p = 0)
 		: item()
 	{
 		layout(l).proportion(p);
 	}
-    item(esgui::layout* l, milimeters mm)
+    item(esgui::layout* l, const layout_opts& opts)
             : item()
     {
-        layout(l).space(mm);
+        layout(l).proportion(opts.m_proportional).space(opts.m_fixed);
     }
     operator layout* () const { return layout(); }
 	
@@ -118,7 +149,7 @@ public:
 	using iterator = std::vector<item>::iterator;
 
 	layout()
-		: m_visible(true)
+		: m_visible(true), m_margin(), m_sep()
 	{}
 	layout(std::vector<item>&& items)
 		: layout()
@@ -140,6 +171,8 @@ public:
 	bool visible() const { return m_visible; }
 	void rect(const esgui::rect& r);
 	const esgui::rect& rect() const { return m_rect; }
+	void margin(float m);
+	void separation(float m);
 	virtual esgui::size min_size() const = 0;
 	virtual void refresh() = 0;
 
@@ -147,6 +180,7 @@ protected:
 	std::vector<item> m_items;
 	esgui::rect m_rect;	
 	bool m_visible;
+	float m_margin, m_sep;
 };
 
 //-------------------------------------------------------------------
@@ -154,14 +188,22 @@ protected:
 class column_layout : public layout
 {
 public:
-	using layout::layout;
+    using layout::layout;
     esgui::size min_size() const;
-	void refresh();
+    void refresh();
 };
 
 inline item column(std::vector<item>&& items, float prop = 0)
 {
 	return item(new column_layout(std::move(items)), prop);
+}
+
+inline item column(std::vector<item>&& items, const layout_opts& opts)
+{
+    layout* lay = new column_layout(std::move(items));
+    lay->margin(opts.m_margin);
+    lay->separation(opts.m_separation);
+    return item(lay).proportion(opts.m_proportional).space(opts.m_fixed);
 }
 
 //-------------------------------------------------------------------
@@ -179,10 +221,14 @@ inline item row(std::vector<item>&& items, float prop = 0)
 	return item(new row_layout(std::move(items)), prop);
 }
 
-inline item row(std::vector<item>&& items, milimeters mm)
+inline item row(std::vector<item>&& items, const layout_opts& opts)
 {
-    return item(new row_layout(std::move(items)), mm);
+    layout* lay = new row_layout(std::move(items));
+    lay->margin(opts.m_margin);
+    lay->separation(opts.m_separation);
+    return item(lay).proportion(opts.m_proportional).space(opts.m_fixed);
 }
+
 
 //-------------------------------------------------------------------
 

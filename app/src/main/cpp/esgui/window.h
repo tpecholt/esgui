@@ -57,14 +57,20 @@ struct rect
 		h = y2 - h;
 		return *this;
 	}
+    point center() const {
+        return {x + w/2, y + h/2};
+    }
 };
 
 struct color
 {
+    static const color transparent;
+
 	float r, g, b, a;
-	color() : r(1), g(1), b(1), a(1) {}
-	color(float r, float g, float b, float a = 1) : r(r), g(g), b(b), a(a) {}
+	constexpr color() : r(1), g(1), b(1), a(1) {}
+	constexpr color(float r, float g, float b, float a = 1) : r(r), g(g), b(b), a(a) {}
 	color(const char* name);
+    float luminance() const { return 0.2126*r + 0.7152*g + 0.0722*b; }
 };
 
 struct font
@@ -78,10 +84,13 @@ struct font
 	font(const std::string& face, int pointSize, int style = 0);
 	int texture() const { return m_texture; }	
 	int point_size() const { return m_point_size; }
+	font make_bold() const;
 
 private:
 	int m_texture;
+	std::string m_face;
 	int m_point_size;
+	int m_style;
 };
 
 enum alignment
@@ -97,22 +106,39 @@ enum alignment
 class window
 {
 public:
-	window()
-		: m_visible(true) 
+    window(int id = 0)
+		: m_visible(true), m_id(id)
 	{}
 	virtual ~window() {}
 
 	void visible(bool s) { m_visible = s; }
 	bool visible() const { return m_visible; }
+	int id() const { return m_id; }
+
 	virtual void rect(const rect& r) {}
 	virtual const esgui::rect& rect() const { static esgui::rect r; return r; }
-	virtual int z() const { return 0; }
+	virtual void color(const esgui::color& color) {}
+	virtual esgui::color color() const { return esgui::color(); }
+	virtual void font(const esgui::font& f) {}
+	virtual const esgui::font& font() const { static esgui::font f; return f; }
+
 	virtual size min_size() { return size(0, 0); }
 	virtual void refresh() {}
-	virtual void render(const int programs[], const float mvp[]) {}
-	virtual void touch(action act, const point& p) {}
+    virtual void render(const std::vector<int>& programs);
+	virtual bool touch(action act, const point& p) { return false; }
 
 protected:
+	struct vbo
+	{
+		unsigned id;
+		int size;
+		int texture;
+		esgui::rect scissor;
+		esgui::point scroll;
+		vbo() : id(), size(), texture() {}
+	};
+	std::vector<vbo> m_vbos;
+	int m_id;
 	bool m_visible;
 };
 

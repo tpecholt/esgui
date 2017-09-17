@@ -4,51 +4,49 @@
 namespace esgui
 {
 
-label::label(container* cont)
-	: widget(cont)
+label::label(container* cont, int id)
+	: widget(cont, id)
 {
 	m_font = app::get().default_font();
+    m_text_color = "white";
+    m_alignment = left | top;
 }
 
-label& label::text(const std::string& l)
+void label::text(const std::string& l)
 {
 	m_label = l;
 	refresh();
-	return *this;
 }
 
-label& label::color(const esgui::color& c)
+void label::color(const esgui::color& c)
 {
 	m_color = c;
 	refresh();
-	return *this;
 }
 
-label& label::text_color(const esgui::color& c)
+void label::text_color(const esgui::color& c)
 {
 	m_text_color = c;
 	refresh();
-	return *this;
 }
 
-label& label::font(const esgui::font& f)
+void label::font(const esgui::font& f)
 {
 	m_font = f;
 	refresh();
-	return *this;
 }
 
-label& label::alignment(int a)
+void label::alignment(int a)
 {
 	m_alignment = a;
 	refresh();
-	return *this;
 }
 
-void label::touch(action act, const point& p)
+bool label::touch(action act, const point& p)
 {
-	if (act == action::up && m_on_click)
+    if (act == action::up && m_on_click)
 		m_on_click();
+    return true;
 }
 
 void label::refresh()
@@ -64,11 +62,7 @@ void label::refresh()
     using namespace esguid;
 	std::vector<VertexData> vbo1;
 	PushRect(vbo1, m_rect.x, m_rect.y, m_rect.w, m_rect.h, m_color);
-    check_err();
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbos[0].id);
-	glBufferData(GL_ARRAY_BUFFER, vbo1.size() * sizeof(VertexData), vbo1.data(), GL_STATIC_DRAW);
-    check_err();
-    m_vbos[0].size = vbo1.size();
+    m_vbos[0].size = SendBuffer(m_vbos[0].id, vbo1);
 
     std::vector<VertexData> vbo2;
 	size s = esguid::MeasureText(m_label, m_font);
@@ -83,11 +77,7 @@ void label::refresh()
 		y = (m_rect.h - s.y) / 2;
 
 	PushText(vbo2, m_rect.x + x, m_rect.y + y, m_label, m_font, m_text_color);
-    check_err();
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbos[1].id);
-	glBufferData(GL_ARRAY_BUFFER, vbo2.size() * sizeof(VertexData), vbo2.data(), GL_STATIC_DRAW);
-    check_err();
-    m_vbos[1].size = vbo2.size();
+    m_vbos[1].size = SendBuffer(m_vbos[1].id, vbo2);
 	m_vbos[1].texture = m_font.texture();
 }
 

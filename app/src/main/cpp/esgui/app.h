@@ -6,6 +6,7 @@
 #include <vector>
 #include <array>
 #include <map>
+#include "app_bar.h"
 
 namespace esgui
 {
@@ -24,17 +25,19 @@ class app
 public:
 	app();
 	static app& get();
-	
-	void register_(container* w);
-	int texture(const std::string& uri, esgui::size& siz);
+
+    void register_(container* w);
+    void overlay(window* w) { m_overlay = w; }
+	int icon_texture(const std::string& uri, esgui::size& siz);
 	int font_texture(const std::string& face, int style);
-	font default_font() { return m_defaultFont; }
-	const font_metrics& font_metrics(font font);
+	const font& default_font();
+	const font_metrics& font_metrics(const font& font);
 	void client_size(size s);
 	size client_size() const { return m_client_size; }
 	size screen_size();
 	int screen_dpi();
 	void toast(const std::string& msg);
+    int status_bar_height();
 
     void set_viewport(int w, int h);
 	void touch(action action, float x, float y);	
@@ -49,20 +52,23 @@ private:
 		int style;
 		esgui::font_metrics metrics;
 	};
-	struct TextureData
+	struct IconData
 	{
 		esgui::size size;
 		int texture;
 	};
 	std::vector<container*> m_containers;
-	font m_defaultFont;
+    app_bar* m_app_bar;
+    window* m_overlay;
+	font m_default_font;
 	std::map<int, FontData> m_fonts;
-	std::map<std::string, TextureData> m_textures;
+	std::map<std::string, IconData> m_icons;
 	std::vector<int> m_programs;
 	matrix4 m_mvp;
 	size m_screen_size;
 	size m_client_size;
 	int m_dpi;
+    int m_status_bar_height;
 };
 
 }

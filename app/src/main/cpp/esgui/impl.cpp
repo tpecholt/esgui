@@ -104,6 +104,13 @@ void PushText(std::vector<VertexData>& vbo, float x, float y, const std::string&
 	}
 }
 
+int SendBuffer(int id, const std::vector<VertexData>& vbo)
+{
+	glBindBuffer(GL_ARRAY_BUFFER, id);
+	glBufferData(GL_ARRAY_BUFFER, vbo.size() * sizeof(VertexData), vbo.data(), GL_STATIC_DRAW);
+	return vbo.size();
+}
+
 esgui::size MeasureText(const std::string& label, const esgui::font& f)
 {
 	using namespace esgui;

@@ -48,6 +48,18 @@ void layout::rect(const esgui::rect& r)
 	refresh();
 }
 
+void layout::margin(float m)
+{
+	m_margin = m;
+	refresh();
+}
+
+void layout::separation(float m)
+{
+	m_sep = m;
+	refresh();
+}
+
 //--------------------------------------------------------------------------
 
 esgui::size row_layout::min_size() const
@@ -65,10 +77,12 @@ esgui::size row_layout::min_size() const
 
 void row_layout::refresh()
 {
-    float sum_min = 0;
-    float sum_fixed = 0;
+    float dpmm = esgui::app::get().screen_dpi() / 25.4;
+    float sum_min = 2 * m_margin * dpmm;
+    float sum_fixed = 2 * m_margin * dpmm;
     float sum_prop = 0;
     check_err();
+	int n = 0;
 	for (const item& i : m_items)
 	{
 		if (!visible())
@@ -78,10 +92,15 @@ void row_layout::refresh()
         sum_min += w;
 		if (!i.proportion())
 			sum_fixed += w;
+		++n;
+	}
+	if (n) {
+		sum_min += (n - 1) * m_sep * dpmm;
+		sum_fixed += (n - 1) * m_sep * dpmm;
 	}
     check_err();
     bool overflow = sum_min > m_rect.w;
-    float x = m_rect.x;
+    float x = m_rect.x + m_margin * dpmm;
 	float prop_w = m_rect.w - sum_fixed;
 	for (item& i : m_items)
 	{
@@ -92,6 +111,9 @@ void row_layout::refresh()
 			w = std::max(w, i.proportion() * prop_w / sum_prop);
 		i.rect({ x, m_rect.y, w, m_rect.h });
 		x += w;
+        if (n > 1)
+            x += m_sep * dpmm;
+        --n;
 	}
     check_err();
 }
@@ -113,10 +135,12 @@ esgui::size column_layout::min_size() const
 
 void column_layout::refresh()
 {
-    float sum_min = 0;
-    float sum_fixed = 0;
+    float dpmm = esgui::app::get().screen_dpi() / 25.4;
+    float sum_min = 2 * m_margin * dpmm;
+    float sum_fixed = 2 * m_margin * dpmm;
     float sum_prop = 0;
     check_err();
+    int n = 0;
     for (const item& i : m_items)
 	{
 		if (!i.visible())
@@ -126,10 +150,15 @@ void column_layout::refresh()
         sum_min += h;
         if (!i.proportion())
 			sum_fixed += h;
+        ++n;
 	}
+    if (n) {
+        sum_min += (n - 1) * m_sep * dpmm;
+        sum_fixed += (n - 1) * m_sep * dpmm;
+    }
     check_err();
     bool overflow = sum_min > m_rect.h;
-	float y = m_rect.y;
+	float y = m_rect.y + m_margin * dpmm;
 	float prop_h = m_rect.h - sum_fixed;
 	for (item& i : m_items)
 	{
@@ -142,6 +171,9 @@ void column_layout::refresh()
 		i.rect({ m_rect.x, y, m_rect.w, h });
         check_err();
 		y += h;
+        if (n > 1)
+            y += m_sep * dpmm;
+        --n;
 	}
     check_err();
 }

@@ -8,16 +8,19 @@ namespace esgui
 class label : public widget
 {
 public:
-	label(container* c);
-	label& text(const std::string& l);
-	label& color(const esgui::color& color);
-	label& text_color(const esgui::color& color);
-	label& font(const esgui::font& f);
-	label& alignment(int align);
+	label(container* c, int id = 0);
+
+	void text(const std::string& l);
+	void color(const esgui::color& color);
+    esgui::color color() const { return m_color; }
+	void font(const esgui::font& f);
+    const esgui::font& font() const { return m_font; };
+	void  text_color(const esgui::color& color);
+	void alignment(int align);
 
 	size min_size();
 	void refresh();
-	void touch(action act, const point& p);
+	bool touch(action act, const point& p);
 
 	template <class T>
 	void on_click(T&& fun) { m_on_click = std::forward<T>(fun); }

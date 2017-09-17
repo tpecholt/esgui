@@ -6,6 +6,7 @@
 #include "esgui/popup.h"
 #include "esgui/button.h"
 #include "esgui/layout.h"
+#include "esgui/app_bar.h"
 #include <algorithm>
 
 using namespace esgui;
@@ -39,6 +40,12 @@ void on_axis(label* lab)
 
 void init_controls()
 {
+    app_bar* app = new app_bar;
+    app->style(app_bar::menu_button | app_bar::left_side_bar);
+    app->text("Bingo");
+    app->color({0.8, 0.3, 0.35});
+    app->menu()->items({"Search", "Manage calendars", "Settings"});
+
     container *page = new container();
     std::vector<button*> buts;
     for (size_t i = 0; i < 3; ++i) {
@@ -136,15 +143,16 @@ void init_controls()
     }
 
     button* but = new button(page);
+    but->style(button::round);
     but->color("dark grey");
-    but->image("ic_launcher");
+    but->icon("@mipmap/ic_launcher");
     but->on_click([]{
         app::get().toast("HAF!");
     });
 
-    page->layout(column(
+    page->layout(column(space(1) |
         row(
-                item(buts[0], 1) | space(1) | item(buts[1], 1) | space(1) | item(buts[2], 1), milimeters(6)
+                item(buts[0], 1) | item(buts[1], 1) | item(buts[2], 1), fixed(6).separation(1)
         ) |
         row(
                 column(

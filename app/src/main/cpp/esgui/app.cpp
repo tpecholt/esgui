@@ -70,9 +70,11 @@ app& app::get()
 }
 
 app::app()
-	: m_dpi()
+	: m_app_bar(), m_overlay()
 {
-	m_mvp = ortho2d(100, 100);
+    m_dpi = 0;
+    m_status_bar_height = 0;
+    m_mvp = ortho2d(100, 100);
 }
 
 void app::init_rendering()
@@ -127,17 +129,25 @@ void app::init_rendering()
 
 void app::register_(container* c)
 {
-	c->rect({ 0, 0, client_size().x, client_size().y });
-	m_containers.push_back(c);
+    if (c->id() == app_bar::sid)
+        m_app_bar = (app_bar*)c;
+    else
+        m_containers.push_back(c);
 }
 
 void app::client_size(size s)
 {
-    LOGE("set client size y=%f", s.y);
-	m_client_size = s;
+    m_client_size = s;
 	m_mvp = ortho2d(s.x, s.y);
-	for (container* c : m_containers)
-		c->layout()->rect({ 0, 0, s.x, s.y });
+    rect r{ 0, 0, client_size().x, client_size().y };
+    if (m_app_bar) {
+        size siz = m_app_bar->min_size();
+        m_app_bar->rect({0, 0, siz.x, siz.y});
+        r.y += m_app_bar->rect().h;
+        r.h -= m_app_bar->rect().h;
+    }
+    for (container* c : m_containers)
+		c->rect(r);
 }
 
 size app::screen_size()
@@ -156,18 +166,33 @@ int app::screen_dpi()
 	return m_dpi;
 }
 
-int app::texture(const std::string& uri, esgui::size& siz)
+const font& app::default_font()
 {
-	auto it = m_textures.find(uri);
-	if (it != m_textures.end()) {
+    if (!m_default_font.texture())
+        m_default_font = font("normal", 10);
+    return m_default_font;
+}
+
+int app::icon_texture(const std::string &uri, esgui::size &siz)
+{
+    if (uri.empty())
+        return 0;
+	auto it = m_icons.find(uri);
+	if (it != m_icons.end()) {
 		siz = it->second.size;
 		return it->second.texture;
 	}
-	TextureData tex;
-	tex.texture = android::LoadTexture(uri.c_str(), tex.size.x, tex.size.y);
-	m_textures[uri] = tex;
-	siz = tex.size;
-	return tex.texture;
+    std::string folder = "drawable", name = uri;
+    if (uri[0] == '@') {
+        size_t i = uri.find('/');
+        folder = uri.substr(1, i - 1);
+        name = uri.substr(i + 1);
+    }
+    IconData ico;
+	ico.texture = android::LoadTexture(folder.c_str(), name.c_str(), ico.size.x, ico.size.y);
+	m_icons[uri] = ico;
+	siz = ico.size;
+	return ico.texture;
 }
 
 int app::font_texture(const std::string& face, int style)
@@ -186,7 +211,7 @@ int app::font_texture(const std::string& face, int style)
 	return texture;
 }
 
-const font_metrics& app::font_metrics(font f)
+const font_metrics& app::font_metrics(const font& f)
 {
 	static esgui::font_metrics tmp;
 	auto it = m_fonts.find(f.texture());
@@ -198,6 +223,13 @@ const font_metrics& app::font_metrics(font f)
 void app::toast(const std::string& msg)
 {
     android::ToastMessage(msg.c_str());
+}
+
+int app::status_bar_height()
+{
+    if (!m_status_bar_height)
+        m_status_bar_height = android::GetStatusBarHeight();
+    return m_status_bar_height;
 }
 
 void app::set_viewport(int width, int height)
@@ -230,20 +262,34 @@ void app::render()
 		glUniformMatrix4fv(loc, 1, false, m_mvp.data());
 	}
 	check_err();
-	for (container* c : m_containers) {
-		c->render(m_programs.data(), m_mvp.data());
-	}
+
+    for (container* c : m_containers)
+		c->render(m_programs);
+    if (m_app_bar)
+        m_app_bar->render(m_programs);
+    if (m_overlay)
+        m_overlay->render(m_programs);
 	check_err();
 }
 
 void app::touch(action act, float x, float y)
 {
 	point p{ x, y };
+    if (m_overlay) {
+        m_overlay->touch(act, p);
+        return;
+    }
+    if (m_app_bar && m_app_bar->visible() &&
+        m_app_bar->rect().contains(p))
+    {
+        m_app_bar->touch(act, p);
+        return;
+    }
 	for (container* c : m_containers) {
 		if (c->visible() && c->rect().contains(p)) {
-			c->touch(act, p);
-			break;
-		}
+            c->touch(act, p);
+            return;
+        }
 	}
 }
 

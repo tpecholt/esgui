@@ -23,6 +23,11 @@ font font::make_bold() const
     return font(m_face, m_point_size, m_style | bold);
 }
 
+font font::make_underline() const
+{
+    return font(m_face, m_point_size, m_style | underline);
+}
+
 //-----------------------------------------------------------------------
 
 const color color::transparent(0, 0, 0, 0);
@@ -47,10 +52,12 @@ color::color(const char* name)
 
 //----------------------------------------------------------------------
 
-void window::render(const std::vector<int>& programs)
+void window::render(const std::vector<int>& programs, const point& scroll)
 {
 	if (!visible())
 		return;
+
+    animate(app::get().now());
 
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
@@ -71,7 +78,7 @@ void window::render(const std::vector<int>& programs)
 		/*int loc = glGetUniformLocation(prog, "mvp");
         glUniformMatrix4fv(loc, 1, false, mvp);*/
 		int loc = glGetUniformLocation(prog, "scroll");
-		glUniform2f(loc, vbo.scroll.x, vbo.scroll.y);
+		glUniform2f(loc, vbo.scroll.x + scroll.x, vbo.scroll.y + scroll.y);
 		glBindTexture(GL_TEXTURE_2D, vbo.texture);
 
 		//always use glGetAttribLocation as locations might be different on different platforms

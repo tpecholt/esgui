@@ -3,6 +3,7 @@
 #include "android.h"
 #include <algorithm>
 #include <exception>
+#include <chrono>
 
 namespace esgui
 {
@@ -70,7 +71,7 @@ app& app::get()
 }
 
 app::app()
-	: m_app_bar(), m_overlay()
+	: m_app_bar(), m_overlay(), m_focus()
 {
     m_dpi = 0;
     m_status_bar_height = 0;
@@ -215,7 +216,8 @@ int app::font_texture(const std::string& face, int style)
 	FontData font;
 	bool bold = style & font::bold;
 	bool italic = style & font::italic;
-	int texture = android::CreateFontAtlas(face.c_str(), bold, italic, 
+    bool underline = style & font::underline;
+	int texture = android::CreateFontAtlas(face.c_str(), bold, italic, underline,
 		font.metrics.char_widths.data(), &font.metrics.ascent, &font.metrics.descent);	
 	m_fonts[texture] = font;
 	return texture;
@@ -242,6 +244,17 @@ int app::status_bar_height()
     return m_status_bar_height;
 }
 
+void app::focus(window* w)
+{
+    window* last = m_focus;
+    m_focus = nullptr;
+    if (last)
+        last->refresh();
+    m_focus = w;
+    update_scroll();
+    android::ShowKeyboard(w);
+}
+
 void app::set_viewport(int width, int height)
 {
     check_err();
@@ -251,8 +264,38 @@ void app::set_viewport(int width, int height)
     check_err();
 }
 
+void app::kbd_height(int h) {
+    m_kbd_h = h;
+    update_scroll();
+}
+
+void app::update_scroll()
+{
+    container* cont = nullptr;
+    for (container* c : m_containers) {
+        if (c->visible()) {
+            cont = c;
+            break;
+        }
+    }
+    if (!cont)
+        return;
+    if (m_focus) {
+        float dpmm = m_dpi / 25.4;
+        esgui::rect r = m_focus->rect();
+        if (r.y + m_scroll.y - dpmm < 0)
+            m_scroll.y = dpmm - r.y;
+        if (r.y + r.h + m_scroll.y + dpmm > m_client_size.y - m_kbd_h)
+            m_scroll.y = m_client_size.y - m_kbd_h - r.y - r.h - dpmm;
+    }
+    m_scroll.y = std::max(m_scroll.y, m_client_size.y - m_kbd_h - cont->rect().h);
+    m_scroll.y = std::min(m_scroll.y, 0.f);
+}
+
 void app::render()
 {
+    m_now = std::chrono::system_clock::now();
+
     check_err();
 	glClearColor(0.f, 0.f, 0.f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);	
@@ -274,7 +317,7 @@ void app::render()
 	check_err();
 
     for (container* c : m_containers)
-		c->render(m_programs);
+		c->render(m_programs, m_scroll);
     if (m_app_bar)
         m_app_bar->render(m_programs);
     if (m_overlay)
@@ -284,6 +327,7 @@ void app::render()
 
 void app::touch(action act, float x, float y)
 {
+    m_now = std::chrono::system_clock::now();
 	point p{ x, y };
     if (m_overlay) {
         m_overlay->touch(act, p);
@@ -295,12 +339,55 @@ void app::touch(action act, float x, float y)
         m_app_bar->touch(act, p);
         return;
     }
-	for (container* c : m_containers) {
-		if (c->visible() && c->rect().contains(p)) {
-            c->touch(act, p);
+
+    container* cont = nullptr;
+    for (container* c : m_containers) {
+        if (c->visible()) {
+            cont = c;
+            break;
+        }
+    }
+    if (!cont)
+        return;
+
+    switch (act) {
+        case action::down:
+            m_last_p = p;
+            m_moving = false;
+            break;
+        case action::move: {
+            if (!m_moving && std::abs(p.y - m_last_p.y) < 10)
+                break;
+            m_moving = true;
+            m_scroll.y += p.y - m_last_p.y;
+            float h = cont->rect().h;
+            m_scroll.y = std::max(m_scroll.y, m_client_size.y - m_kbd_h - h);
+            m_scroll.y = std::min(m_scroll.y, 0.f);
+            m_last_p = p;
             return;
         }
-	}
+        case action::up:
+            if (m_moving)
+                return;
+            break;
+    }
+
+    p.x -= m_scroll.x;
+    p.y -= m_scroll.y;
+	if (cont->rect().contains(p)) {
+        cont->touch(act, p);
+        return;
+    }
+}
+
+void app::press(int key)
+{
+    if (m_focus) {
+        update_scroll();
+        m_focus->press(key);
+    }
+    if (m_overlay)
+        m_overlay->press(key);
 }
 
 }

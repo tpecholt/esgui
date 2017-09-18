@@ -5,6 +5,7 @@
 #ifndef ESGUI_EDIT_TEXT_H
 #define ESGUI_EDIT_TEXT_H
 
+#include <chrono>
 #include "widget.h"
 
 namespace esgui {
@@ -24,12 +25,12 @@ public:
     void font(const esgui::font& f);
     void text(const std::string& l);
     void hint(const std::string& l);
-    void focused(bool f);
-    bool focused() const { return m_focused; }
 
     size min_size();
     void refresh();
-    bool touch(action act, const point& p);
+    void touch(action act, const point& p);
+    void press(int key);
+    void animate(std::chrono::system_clock::time_point tp);
 
 protected:
     enum style m_style;
@@ -38,7 +39,8 @@ protected:
     esgui::font m_font;
     esgui::color m_text_color;
     esgui::color m_color;
-    bool m_focused;
+    int m_sel;
+    std::chrono::system_clock::time_point m_tp;
 };
 
 }

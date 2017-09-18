@@ -5,17 +5,20 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import android.view.KeyEvent;
 
 import com.tope.lotery.R;
 
@@ -30,6 +33,8 @@ public class MainActivity extends Activity {
     private native void CreateObjectNative();
     private native void DeleteObjectNative();
     private native void OnBackPressedNative();
+    private native void OnKeyNative(int c);
+    private native void SetKbdHeightNative(int h);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +43,7 @@ public class MainActivity extends Activity {
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
+        //set transparent status bar
         if (Build.VERSION.SDK_INT >= 21) {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -57,6 +63,20 @@ public class MainActivity extends Activity {
             ((ViewGroup) getWindow().getDecorView()).addView(view);
             view.setBackgroundColor(Color.RED);
         }
+
+        //set view listener to monitor kbd height
+        View mRootView = getWindow().getDecorView().findViewById(android.R.id.content);
+        mRootView.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    public void onGlobalLayout(){
+                        Rect r = new Rect();
+                        View view = getWindow().getDecorView();
+                        view.getWindowVisibleDisplayFrame(r);
+                        int h = mView.mRenderer.lasth - r.height();
+                        if (h >= 0)
+                            SetKbdHeightNative(h);
+                    }
+                });
 
         CreateObjectNative();
 
@@ -131,12 +151,38 @@ public class MainActivity extends Activity {
 
     public static void showKeyboard(boolean b)
     {
+        final boolean bo = b;
         sActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 InputMethodManager imm = (InputMethodManager) sActivity.getSystemService(sActivity.INPUT_METHOD_SERVICE);
-                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+                imm.toggleSoftInput(
+                        bo ? InputMethodManager.SHOW_FORCED : 0,
+                        bo ? InputMethodManager.SHOW_FORCED : 0);
             }
         });
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent KEvent)
+    {
+        int keyaction = KEvent.getAction();
+
+        if(keyaction == KeyEvent.ACTION_DOWN)
+        {
+            int keycode = KEvent.getKeyCode();
+            int keyunicode = KEvent.getUnicodeChar(KEvent.getMetaState() );
+            if (keycode == KeyEvent.KEYCODE_DEL)
+                keyunicode = 0x8;
+            final int uni = keyunicode;
+            sActivity.mView.queueEvent(new Runnable() {
+                @Override
+                public void run() {
+                    OnKeyNative(uni);
+                }
+            });
+        }
+
+        return super.dispatchKeyEvent(KEvent);
     }
 }

@@ -21,7 +21,7 @@ void popup::exec()
     app::get().overlay(this);
 }
 
-bool popup::touch(action act, const point& p)
+void popup::touch(action act, const point& p)
 {
     float dh = menu_dh();
 	esgui::rect r = m_rect;
@@ -64,14 +64,15 @@ bool popup::touch(action act, const point& p)
             }
             break;
         }
-		case action::cancel:
-			if (m_on_popup)
-				m_on_popup(-1);
-			visible(false);
-            app::get().overlay(nullptr);
-			break;
 	}
-    return true;
+}
+
+void popup::press(int key)
+{
+    if (m_on_popup)
+        m_on_popup(-1);
+    visible(false);
+    app::get().overlay(nullptr);
 }
 
 float popup::menu_dh() const

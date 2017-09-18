@@ -157,6 +157,7 @@ void init_controls()
     for (int i = 0; i < 3; ++i)
         edits.push_back(new edit_text(page));
     edits[0]->text("Tomas p");
+    edits[0]->hint("Name");
     edits[1]->hint("Job title");
     label* org = new label(page);
     org->text("Organization");

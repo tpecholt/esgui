@@ -21,7 +21,8 @@ public:
 	}
 	const std::vector<std::string>& items() const { return m_items; }
 	void refresh();
-	bool touch(action act, const point& p);
+	void touch(action act, const point& p);
+	void press(int code);
 	void exec(const point& p);
 	
 	template <class T>

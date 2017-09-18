@@ -24,8 +24,9 @@ public:
 	popup& selection(int sel) { m_sel = sel; return* this; }
 	int selection() const { return m_sel; }
 	void refresh();
-	bool touch(action act, const point& p);
-	void exec();    
+	void touch(action act, const point& p);
+	void press(int key);
+	void exec();
 	
 	template <class T>
 	void on_popup(T&& fun) { m_on_popup = std::forward<T>(fun); }	

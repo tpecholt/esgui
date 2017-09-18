@@ -43,11 +43,10 @@ void label::alignment(int a)
 	refresh();
 }
 
-bool label::touch(action act, const point& p)
+void label::touch(action act, const point& p)
 {
     if (act == action::up && m_on_click)
 		m_on_click();
-    return true;
 }
 
 void label::refresh()

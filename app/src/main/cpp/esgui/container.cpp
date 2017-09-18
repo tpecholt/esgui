@@ -75,23 +75,21 @@ void container::refresh()
     m_layout->refresh();
 }
 
-void container::render(const std::vector<int>& programs)
+void container::render(const std::vector<int>& programs, const point& scroll)
 {
-	window::render(programs);
+	window::render(programs, scroll);
 
 	for (window* w : m_children)
-        w->render(programs);
+        w->render(programs, scroll);
 }
 
-bool container::touch(action act, const point& p)
+void container::touch(action act, const point& p)
 {
     for (window *w : m_children) {
         if (w->visible() && w->rect().contains(p)) {
             w->touch(act, p);
-            return true;
         }
     }
-    return false;
 }
 
 }

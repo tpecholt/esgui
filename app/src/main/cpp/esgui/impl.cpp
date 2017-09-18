@@ -128,4 +128,22 @@ esgui::size MeasureText(const std::string& label, const esgui::font& f)
 	return { w, h };
 }
 
+int TextPos(const std::string& label, const esgui::font& f, float x)
+{
+    using namespace esgui;
+    const font_metrics& metrics = app::get().font_metrics(f);
+    int dpi = app::get().screen_dpi();
+    const float dx = f.point_size() / 72.f * dpi;
+
+    int w = 0;
+    for (size_t i = 0; i < label.size(); ++i)
+    {
+        int c = label[i] - 32;
+        w += dx * metrics.char_widths[c];
+        if (x < w)
+            return i;
+    }
+    return label.size();
+}
+
 }

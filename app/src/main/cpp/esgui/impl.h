@@ -45,4 +45,6 @@ int SendBuffer(int id, const std::vector<VertexData>& vbo);
 
 esgui::size MeasureText(const std::string& label, const esgui::font& f);
 
+int TextPos(const std::string& label, const esgui::font& f, float x);
+
 }

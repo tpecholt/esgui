@@ -3,6 +3,7 @@
 #include "event.h"
 #include <string>
 #include <vector>
+#include <chrono>
 
 namespace esgui
 {
@@ -82,13 +83,17 @@ struct font
 	enum {
 		bold = 0x1,
 		italic = 0x2,
+		underline = 0x4,
 	};
 	font();
 	font(int texture, int pointSize);
 	font(const std::string& face, int pointSize, int style = 0);
-	int texture() const { return m_texture; }	
+	int texture() const { return m_texture; }
+	const std::string& face() const { return m_face; }
 	int point_size() const { return m_point_size; }
+	int style() const { return m_style; }
 	font make_bold() const;
+	font make_underline() const;
 
 private:
 	int m_texture;
@@ -128,8 +133,10 @@ public:
 
 	virtual size min_size() { return size(0, 0); }
 	virtual void refresh() {}
-    virtual void render(const std::vector<int>& programs);
-	virtual bool touch(action act, const point& p) { return false; }
+    virtual void render(const std::vector<int>& programs, const point& scroll = point{});
+	virtual void touch(action act, const point& p) {}
+    virtual void press(int key) {}
+    virtual void animate(std::chrono::system_clock::time_point tp) {}
 
 protected:
 	struct vbo

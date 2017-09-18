@@ -16,6 +16,7 @@ public class MainRenderer implements GLSurfaceView.Renderer
     private native void SurfaceChangedNative(int width, int height);
 
     private MainView mView;
+    public int lastw = 0, lasth = 0;
  
     MainRenderer( MainView view ) {
         mView = view;    
@@ -34,6 +35,8 @@ public class MainRenderer implements GLSurfaceView.Renderer
     }
    
     public void onSurfaceChanged ( GL10 unused, int width, int height ) {
+        lastw = width;
+        lasth = height;
         SurfaceChangedNative(width, height);
     }  
 

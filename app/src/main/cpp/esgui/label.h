@@ -20,7 +20,7 @@ public:
 
 	size min_size();
 	void refresh();
-	bool touch(action act, const point& p);
+	void touch(action act, const point& p);
 
 	template <class T>
 	void on_click(T&& fun) { m_on_click = std::forward<T>(fun); }

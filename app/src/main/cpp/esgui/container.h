@@ -21,9 +21,9 @@ public:
 	window* find_child(int id);
     void delete_children();
 
-    bool touch(action act, const point& p);
+    void touch(action act, const point& p);
 	void register_(window* w);
-	void render(const std::vector<int>& programs);
+	void render(const std::vector<int>& programs, const point& scroll = point{});
 	void refresh();
 
 protected:

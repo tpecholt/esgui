@@ -19,7 +19,19 @@ Java_com_tope_esgui_MainActivity_DeleteObjectNative(JNIEnv *env, jobject instanc
 JNIEXPORT void JNICALL
 Java_com_tope_esgui_MainActivity_OnBackPressedNative(JNIEnv *env, jobject instance)
 {
-	esgui::app::get().touch(esgui::action::cancel, 0, 0);
+	esgui::app::get().press(0x1b);
+}
+
+JNIEXPORT void JNICALL
+Java_com_tope_esgui_MainActivity_OnKeyNative(JNIEnv *env, jobject instance, jint code)
+{
+	esgui::app::get().press(code);
+}
+
+JNIEXPORT void JNICALL
+Java_com_tope_esgui_MainActivity_SetKbdHeightNative(JNIEnv *env, jobject instance, jint h)
+{
+    esgui::app::get().kbd_height(h);
 }
 
 JNIEXPORT void JNICALL

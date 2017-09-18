@@ -4,7 +4,7 @@
 namespace android
 {
 
-int CreateFontAtlas(const char* face, bool bold, bool italic, float* spacing, float* ascent, float* descent);
+int CreateFontAtlas(const char* face, bool bold, bool italic, bool underline, float* spacing, float* ascent, float* descent);
 
 int LoadTexture(const char* folder, const char* name, float& w, float& h);
 

@@ -31,7 +31,7 @@ class core
 	}
 
 	//create a texture with 96 ascii characters in a regular grid 10x10
-	public static int createFontAtlas(String fontName, boolean bold, boolean italic)
+	public static int createFontAtlas(String fontName, boolean bold, boolean italic, boolean underline)
 	{
 		int width = FONT_ATLAS_COLS * FONT_ATLAS_CELL_SIZE; 
 		Bitmap bitmap = Bitmap.createBitmap(width, width, Bitmap.Config.ARGB_4444);
@@ -45,6 +45,7 @@ class core
 		int style = 0;
 		if (bold) style |= Typeface.BOLD;
 		if (italic) style |= Typeface.ITALIC;
+		if (underline) textPaint.setUnderlineText(true);
 		textPaint.setTypeface(Typeface.create(fontName, style));
 		textPaint.setColor(Color.WHITE);
 		textPaint.setTextSize(FONT_ATLAS_POINT_SIZE);
@@ -77,7 +78,7 @@ class core
 		return hTex[0];
 	}
 
-	public static float[] getFontSpacing(String fontName, boolean bold, boolean italic)
+	public static float[] getFontSpacing(String fontName, boolean bold, boolean italic, boolean underline)
 	{
 		Paint p = new Paint();
 		int style = 0;
@@ -85,6 +86,7 @@ class core
 		if (italic) style |= Typeface.ITALIC;
 		p.setTypeface(Typeface.create(fontName, style));
 		p.setTextSize(FONT_ATLAS_POINT_SIZE);
+		if (underline) p.setUnderlineText(true);
 		float[] ret = new float[FONT_ATLAS_COLS*FONT_ATLAS_COLS];
 		
 		FontMetrics fm = p.getFontMetrics();

@@ -26,10 +26,8 @@ void menu::exec(const point& p)
     app::get().overlay(this);
 }
 
-bool menu::touch(action act, const point& p)
+void menu::touch(action act, const point& p)
 {
-    if (!visible())
-        return false;
     float dh = menu_dh();
 	esgui::rect r = m_rect;
 	int idx = int((p.y - r.y) / dh);
@@ -60,14 +58,13 @@ bool menu::touch(action act, const point& p)
             app::get().overlay(nullptr);
             break;
         }
-		case action::cancel:
-			if (m_on_menu)
-				m_on_menu(-1);
-			visible(false);
-            app::get().overlay(nullptr);
-			break;
 	}
-    return true;
+}
+
+void menu::press(int code)
+{
+    visible(false);
+    app::get().overlay(nullptr);
 }
 
 const esgui::font& menu::font() const

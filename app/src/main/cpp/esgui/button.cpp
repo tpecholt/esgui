@@ -50,11 +50,10 @@ void button::icon(const std::string& uri, float scale)
 	refresh();
 }
 
-bool button::touch(action act, const point& p)
+void button::touch(action act, const point& p)
 {
     if (act == action::up && m_on_click)
 		m_on_click();
-    return true;
 }
 
 void button::refresh()

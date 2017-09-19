@@ -1,5 +1,6 @@
 package com.tope.esgui;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -10,13 +11,18 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.InputType;
+import android.text.method.DigitsKeyListener;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.view.KeyEvent;
 
@@ -26,9 +32,10 @@ import java.lang.reflect.Field;
 
 public class MainActivity extends Activity {
 
+    protected static MainActivity sActivity;
     protected MainView mView;
     protected Resources mRes;
-    protected static MainActivity sActivity;
+    private EditText mEditView;
 
     private native void CreateObjectNative();
     private native void DeleteObjectNative();
@@ -80,8 +87,18 @@ public class MainActivity extends Activity {
 
         CreateObjectNative();
 
+        //setContentView( mView );
+        //create shity layout with secret EditText in background
+        FrameLayout lay = new FrameLayout(this);
+        setContentView(lay, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+
+        mEditView = new EditText(this);
+        mEditView.setLayoutParams(new FrameLayout.LayoutParams(1, 1));
+        lay.addView(mEditView);
+
         mView = new MainView(this);
-        setContentView ( mView );
+        mView.setLayoutParams(new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        lay.addView(mView);
     }
 
     static public int getStatusBarHeight() {
@@ -149,16 +166,35 @@ public class MainActivity extends Activity {
         }
     }
 
-    public static void showKeyboard(boolean b)
+    public static void showKeyboard(int kb)
     {
-        final boolean bo = b;
+        final int kbd = kb;
         sActivity.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 InputMethodManager imm = (InputMethodManager) sActivity.getSystemService(sActivity.INPUT_METHOD_SERVICE);
-                imm.toggleSoftInput(
+                sActivity.mEditView.requestFocus();
+                switch (kbd) {
+                    case 0: //hide
+                        imm.hideSoftInputFromWindow(sActivity.mEditView.getWindowToken(), 0);
+                        break;
+                    case 1: //all
+                        sActivity.mEditView.setKeyListener(null);
+                        imm.showSoftInput(sActivity.mEditView, InputMethodManager.SHOW_IMPLICIT);
+                        break;
+                    case 2: //number
+                        sActivity.mEditView.setKeyListener(new DigitsKeyListener(false, false));
+                        imm.showSoftInput(sActivity.mEditView, InputMethodManager.SHOW_IMPLICIT);
+                        break;
+                    case 3: //decimal
+                        sActivity.mEditView.setKeyListener(new DigitsKeyListener(false, true));
+                        imm.showSoftInput(sActivity.mEditView, InputMethodManager.SHOW_IMPLICIT);
+                        break;
+                }
+
+                /*imm.toggleSoftInput(
                         bo ? InputMethodManager.SHOW_FORCED : 0,
-                        bo ? InputMethodManager.SHOW_FORCED : 0);
+                        !bo ? InputMethodManager.SHOW_FORCED : 0);*/
             }
         });
     }

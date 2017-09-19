@@ -1,6 +1,7 @@
 #pragma once
 #include "widget.h"
 #include "container.h"
+#include "edit_text.h"
 #include "impl.h"
 #include <string>
 #include <vector>
@@ -29,8 +30,8 @@ public:
 	static app& get();
 
     void register_(container* w);
-    void overlay(window* w) { m_overlay = w; }
-    void focus(window* w);
+    void overlay(window* w);
+    void focus(edit_text* w);
 	window* focus() const { return m_focus; }
 	int icon_texture(const std::string& uri, esgui::size& siz);
 	int font_texture(const std::string& face, int style);

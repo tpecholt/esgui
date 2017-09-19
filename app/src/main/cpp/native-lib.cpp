@@ -156,12 +156,13 @@ void init_controls()
     std::vector<edit_text*> edits;
     for (int i = 0; i < 3; ++i)
         edits.push_back(new edit_text(page));
-    edits[0]->text("Tomas p");
     edits[0]->hint("Name");
+    edits[0]->text("Tomas p");
     edits[1]->hint("Job title");
     label* org = new label(page);
     org->text("Organization");
     edits[2]->hint("Department");
+    edits[2]->style(edit_text::number);
 
     page->layout(column(
         row(

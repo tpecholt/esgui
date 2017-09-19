@@ -88,6 +88,7 @@ void container::touch(action act, const point& p)
     for (window *w : m_children) {
         if (w->visible() && w->rect().contains(p)) {
             w->touch(act, p);
+            break;
         }
     }
 }

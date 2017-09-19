@@ -244,15 +244,34 @@ int app::status_bar_height()
     return m_status_bar_height;
 }
 
-void app::focus(window* w)
+void app::focus(edit_text* w)
 {
     window* last = m_focus;
     m_focus = nullptr;
     if (last)
         last->refresh();
     m_focus = w;
-    update_scroll();
-    android::ShowKeyboard(w);
+    if (m_focus)
+    {
+        update_scroll();
+        switch (w->style()) {
+            case edit_text::all:
+                android::ShowKeyboard(1);
+                break;
+            case edit_text::number:
+                android::ShowKeyboard(2);
+                break;
+            case edit_text::decimal:
+                android::ShowKeyboard(3);
+                break;
+        }
+    }
+}
+
+void app::overlay(window* w)
+{
+    m_overlay = w;
+    if (w) android::ShowKeyboard(0);
 }
 
 void app::set_viewport(int width, int height)
@@ -350,6 +369,7 @@ void app::touch(action act, float x, float y)
     if (!cont)
         return;
 
+    //todo: move this to container
     switch (act) {
         case action::down:
             m_last_p = p;

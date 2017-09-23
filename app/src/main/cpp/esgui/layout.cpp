@@ -72,7 +72,7 @@ esgui::size row_layout::min_size() const
 {
     float dpmm = esgui::app::get().screen_dpi() / 25.4;
     check_err();
-    esgui::size siz{2*m_hmargin*dpmm, 2*m_vmargin};
+    esgui::size siz{2*m_hmargin*dpmm, 2*m_vmargin*dpmm};
     int n = 0;
     for (const item& i : m_items) {
         if (!i.visible())
@@ -132,6 +132,9 @@ void row_layout::refresh()
             x += m_sep * dpmm;
         --n;
 	}
+    x += m_hmargin * dpmm;
+    if (!sum_prop || overflow)
+        m_rect.w = x - m_rect.x;
     check_err();
 }
 
@@ -203,6 +206,9 @@ void column_layout::refresh()
             y += m_sep * dpmm;
         --n;
 	}
+    y += m_vmargin * dpmm;
+    if (!sum_prop || overflow)
+        m_rect.h = y - m_rect.y;
     check_err();
 }
 

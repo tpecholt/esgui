@@ -15,6 +15,14 @@ struct point
 	point(float x, float y) : x(x), y(y) {}
 };
 
+inline point operator+ (const point& a, const point& b) {
+	return point(a.x + b.x, a.y + b.y);
+}
+
+inline point operator- (const point& a, const point& b) {
+	return point(a.x - b.x, a.y - b.y);
+}
+
 using size = point;
 
 struct rect

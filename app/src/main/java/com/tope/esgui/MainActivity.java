@@ -1,19 +1,15 @@
 package com.tope.esgui;
 
-import android.app.ActionBar;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+//import android.graphics.Camera;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.InputType;
 import android.text.method.DigitsKeyListener;
-import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -22,13 +18,12 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 import android.view.KeyEvent;
+import android.hardware.Camera;
 
-import com.tope.lotery.R;
-
-import java.lang.reflect.Field;
+import java.io.IOException;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -36,6 +31,7 @@ public class MainActivity extends Activity {
     protected MainView mView;
     protected Resources mRes;
     private EditText mEditView;
+    private Camera mCamera;
 
     private native void CreateObjectNative();
     private native void DeleteObjectNative();
@@ -79,6 +75,7 @@ public class MainActivity extends Activity {
                         Rect r = new Rect();
                         View view = getWindow().getDecorView();
                         view.getWindowVisibleDisplayFrame(r);
+                        r.top = 0; //status bar is transparent
                         int h = mView.mRenderer.lasth - r.height();
                         if (h >= 0)
                             SetKbdHeightNative(h);
@@ -112,6 +109,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        openCamera(false);
         super.onDestroy();
         DeleteObjectNative();
     }
@@ -191,10 +189,6 @@ public class MainActivity extends Activity {
                         imm.showSoftInput(sActivity.mEditView, InputMethodManager.SHOW_IMPLICIT);
                         break;
                 }
-
-                /*imm.toggleSoftInput(
-                        bo ? InputMethodManager.SHOW_FORCED : 0,
-                        !bo ? InputMethodManager.SHOW_FORCED : 0);*/
             }
         });
     }
@@ -221,4 +215,47 @@ public class MainActivity extends Activity {
 
         return super.dispatchKeyEvent(KEvent);
     }
+
+    public static int openCamera(boolean open)
+    {
+        final boolean op = open;
+        final MainRenderer renderer = sActivity.mView.mRenderer;
+        sActivity.runOnUiThread(
+            new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (op) {
+                            if (sActivity.mCamera == null) {
+                                sActivity.mCamera = Camera.open();
+                                sActivity.mCamera.setPreviewTexture(renderer.getTexture());
+                                Camera.Parameters param = sActivity.mCamera.getParameters();
+                                List<Camera.Size> psize = param.getSupportedPreviewSizes();
+                                int maxRes = 0;
+                                for (int i = 0; i < psize.size(); i++) {
+                                    if (psize.get(i).width * psize.get(i).height > maxRes) {
+                                        maxRes = psize.get(i).width * psize.get(i).height;
+                                        param.setPreviewSize(psize.get(i).width, psize.get(i).height);
+                                    }
+                                }
+                                param.set("orientation", "landscape");
+                                sActivity.mCamera.setParameters(param);
+                            }
+                            sActivity.mCamera.startPreview();
+                        }
+                        else {
+                            if (sActivity.mCamera != null) {
+                                sActivity.mCamera.stopPreview();
+                                sActivity.mCamera.release();
+                                sActivity.mCamera = null;
+                            }
+                        }
+                    } catch ( IOException ioe ) {
+                        ioe.printStackTrace();
+                    }
+                }
+            });
+        return renderer.getHTex();
+    }
+
 }

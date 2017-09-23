@@ -20,6 +20,7 @@ public:
     const std::vector<window*>& children() { return m_children; }
 	window* find_child(int id);
     void delete_children();
+	void ensure_visible(window* w);
 
     void touch(action act, const point& p);
 	void register_(window* w);
@@ -30,6 +31,9 @@ protected:
 	esgui::layout* m_layout;
 	std::vector<window*> m_children;
 	esgui::color m_color;
+	esgui::point m_scroll;
+	esgui::point m_last_p;
+	bool m_moving;
 };
 
 }

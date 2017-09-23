@@ -19,7 +19,7 @@ static int create_program(const char* vertexSource, const char* fragmentSource)
 	{
 		std::string err(256, ' ');
 		glGetShaderInfoLog(vertexShader, err.size(), NULL, &err[0]);
-		LOGE("vertex shader error");
+		LOGE("vertex shader error: %s", err.c_str());
 	}
 
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -30,7 +30,7 @@ static int create_program(const char* vertexSource, const char* fragmentSource)
 	{
 		std::string err(256, ' ');
 		glGetShaderInfoLog(fragmentShader, err.size(), NULL, &err[0]);
-		LOGE("fragment shader error");
+		LOGE("fragment shader error: %s", err.c_str());
 	}
 
 	int prog = glCreateProgram();
@@ -119,8 +119,20 @@ void app::init_rendering()
 		"   gl_FragColor = texture2D(sampler, outCoords) * outColor; "
 		"}";
 
-	m_programs.push_back(create_program(vertexSource, fragmentSource1));
+    const char* fragmentSource3 =
+            "#extension GL_OES_EGL_image_external : require\n"
+        "precision mediump float; "
+        "varying vec4 outColor; "
+        "varying vec2 outCoords; "
+        "uniform samplerExternalOES sampler; "
+        "void main() "
+        "{ "
+        "   gl_FragColor = texture2D(sampler, outCoords) * outColor; "
+        "}";
+
+    m_programs.push_back(create_program(vertexSource, fragmentSource1));
 	m_programs.push_back(create_program(vertexSource, fragmentSource2));
+    m_programs.push_back(create_program(vertexSource, fragmentSource3));
 	
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
@@ -251,20 +263,22 @@ void app::focus(edit_text* w)
     if (last)
         last->refresh();
     m_focus = w;
-    if (m_focus)
-    {
-        update_scroll();
-        switch (w->style()) {
-            case edit_text::all:
-                android::ShowKeyboard(1);
-                break;
-            case edit_text::number:
-                android::ShowKeyboard(2);
-                break;
-            case edit_text::decimal:
-                android::ShowKeyboard(3);
-                break;
-        }
+    if (!m_focus)
+        return;
+    for (container* c : m_containers) {
+        if (c->visible())
+            c->ensure_visible(m_focus);
+    }
+    switch (w->input_type()) {
+        case edit_text::all:
+            android::ShowKeyboard(1);
+            break;
+        case edit_text::number:
+            android::ShowKeyboard(2);
+            break;
+        case edit_text::decimal:
+            android::ShowKeyboard(3);
+            break;
     }
 }
 
@@ -285,30 +299,10 @@ void app::set_viewport(int width, int height)
 
 void app::kbd_height(int h) {
     m_kbd_h = h;
-    update_scroll();
-}
-
-void app::update_scroll()
-{
-    container* cont = nullptr;
     for (container* c : m_containers) {
-        if (c->visible()) {
-            cont = c;
-            break;
-        }
+        if (c->visible())
+            c->ensure_visible(m_focus);
     }
-    if (!cont)
-        return;
-    if (m_focus) {
-        float dpmm = m_dpi / 25.4;
-        esgui::rect r = m_focus->rect();
-        if (r.y + m_scroll.y - dpmm < 0)
-            m_scroll.y = dpmm - r.y;
-        if (r.y + r.h + m_scroll.y + dpmm > m_client_size.y - m_kbd_h)
-            m_scroll.y = m_client_size.y - m_kbd_h - r.y - r.h - dpmm;
-    }
-    m_scroll.y = std::max(m_scroll.y, m_client_size.y - m_kbd_h - cont->rect().h);
-    m_scroll.y = std::min(m_scroll.y, 0.f);
 }
 
 void app::render()
@@ -316,7 +310,8 @@ void app::render()
     m_now = std::chrono::system_clock::now();
 
     check_err();
-	glClearColor(0.f, 0.f, 0.f, 1.0f);
+    color cb = m_theme.background;
+	glClearColor(cb.r, cb.g, cb.b, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT);	
 	
 	check_err();
@@ -336,7 +331,7 @@ void app::render()
 	check_err();
 
     for (container* c : m_containers)
-		c->render(m_programs, m_scroll);
+		c->render(m_programs);
     if (m_app_bar)
         m_app_bar->render(m_programs);
     if (m_overlay)
@@ -358,52 +353,21 @@ void app::touch(action act, float x, float y)
         m_app_bar->touch(act, p);
         return;
     }
-
-    container* cont = nullptr;
     for (container* c : m_containers) {
-        if (c->visible()) {
-            cont = c;
+        if (c->visible() && c->rect().contains(p)) {
+            c->touch(act, p);
             break;
         }
-    }
-    if (!cont)
-        return;
-
-    //todo: move this to container
-    switch (act) {
-        case action::down:
-            m_last_p = p;
-            m_moving = false;
-            break;
-        case action::move: {
-            if (!m_moving && std::abs(p.y - m_last_p.y) < 10)
-                break;
-            m_moving = true;
-            m_scroll.y += p.y - m_last_p.y;
-            float h = cont->rect().h;
-            m_scroll.y = std::max(m_scroll.y, m_client_size.y - m_kbd_h - h);
-            m_scroll.y = std::min(m_scroll.y, 0.f);
-            m_last_p = p;
-            return;
-        }
-        case action::up:
-            if (m_moving)
-                return;
-            break;
-    }
-
-    p.x -= m_scroll.x;
-    p.y -= m_scroll.y;
-	if (cont->rect().contains(p)) {
-        cont->touch(act, p);
-        return;
     }
 }
 
 void app::press(int key)
 {
     if (m_focus) {
-        update_scroll();
+        for (container* c : m_containers) {
+            if (c->visible())
+                c->ensure_visible(m_focus);
+        }
         m_focus->press(key);
     }
     if (m_overlay)

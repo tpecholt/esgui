@@ -8,6 +8,7 @@
 #include "esgui/layout.h"
 #include "esgui/app_bar.h"
 #include "esgui/edit_text.h"
+#include "esgui/camera_preview.h"
 #include <algorithm>
 
 using namespace esgui;
@@ -41,15 +42,22 @@ void on_axis(label* lab)
 
 void init_controls()
 {
+    container *page = new container;
+    container* preview = new container;
+    preview->visible(false);
+
     app_bar* app = new app_bar;
     app->style(app_bar::back_button | app_bar::menu_button);
     app->text("Bingo");
     //app->color({0.8, 0.3, 0.35});
     app->menu()->items({"Search", "Manage calendars", "Settings"});
-    app->on_back([]{ app::get().toast("back"); });
+    app->menu()->label("Hello");
+    app->on_back([=]{
+        page->visible(true);
+        preview->visible(false);
+    });
     app->on_menu([](int idx){ app::get().toast("menu " + to_string(idx)); });
 
-    container *page = new container();
     std::vector<button*> buts;
     for (size_t i = 0; i < 3; ++i) {
         button* but = new button(page);
@@ -162,7 +170,22 @@ void init_controls()
     label* org = new label(page);
     org->text("Organization");
     edits[2]->hint("Department");
-    edits[2]->style(edit_text::number);
+    edits[2]->input_type(edit_text::number);
+
+    camera_preview* prw = new camera_preview(preview);
+    button* scan = new button(page);
+    scan->text("SCAN BUSINESS CARD");
+    scan->font({"normal", 9});
+    scan->on_click([=]{
+        page->visible(false);
+        preview->visible(true);
+        prw->start();
+    });
+
+    preview->layout(column(
+            item(prw, 1),
+            hmargin(1).vmargin(1)
+    ));
 
     page->layout(column(
         row(
@@ -199,7 +222,10 @@ void init_controls()
         space(2) |
         org |
         edits[1] |
-        edits[2],
+        edits[2] |
+        space(3) |
+        scan |
+        space(1),
         hmargin(1).vmargin(1).separation(1)
     ));
 }

@@ -20,4 +20,6 @@ void ToastMessage(const char* msg);
 
 void ShowKeyboard(int kb);
 
+int OpenCamera(bool open);
+
 }

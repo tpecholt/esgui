@@ -10,16 +10,24 @@
 namespace esgui {
 
 edit_text::edit_text(container* cont, int id)
-        : widget(cont, id), m_style(all)
+        : widget(cont, id)
 {
+    m_input_type = all;
+    m_style = normal;
     m_font = app::get().default_font();
-    m_color = app::get().theme().background;
+    m_color = color::transparent;
     m_text_color = app::get().theme().edit_text;
 }
 
 void edit_text::style(enum style s)
 {
     m_style = s;
+    refresh();
+}
+
+void edit_text::input_type(enum input_type s)
+{
+    m_input_type = s;
     refresh();
 }
 
@@ -80,7 +88,7 @@ void edit_text::press(int key)
         ++m_sel;
         refresh();
     }
-    else if (m_style == all && key >= 32 && key <= 127) {
+    else if (m_input_type == all && key >= 32 && key <= 127) {
         m_text.insert(m_text.begin() + m_sel, key);
         ++m_sel;
         refresh();
@@ -104,7 +112,7 @@ void edit_text::refresh()
 
     using namespace esguid;
     esgui::rect r = rect();
-    float th = 0.15 * dpmm;
+    float th = (focused ? 0.25 : 0.15) * dpmm;
     std::vector<VertexData> vbo1;
     PushRect(vbo1, r.x, r.y, r.w, r.h, m_color);
     PushRect(vbo1, r.x, r.y + r.h - th, r.w, th, cline);

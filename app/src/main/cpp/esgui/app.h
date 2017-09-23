@@ -47,6 +47,7 @@ public:
     const esgui::theme& theme() const { return m_theme; }
     std::chrono::system_clock::time_point now() const { return m_now; }
 	void kbd_height(int h);
+	int kbd_height() const { return m_kbd_h; }
 
     void set_viewport(int w, int h);
 	void touch(action action, float x, float y);
@@ -55,7 +56,6 @@ public:
 
 private:
 	void init_rendering();
-    void update_scroll();
 
 	struct FontData
 	{
@@ -84,9 +84,6 @@ private:
     int m_status_bar_height;
     esgui::theme m_theme;
     std::chrono::system_clock::time_point m_now;
-	esgui::point m_scroll;
-	esgui::point m_last_p;
-	bool m_moving;
 };
 
 }

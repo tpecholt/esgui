@@ -214,6 +214,11 @@ inline item column(std::vector<item>&& items, const layout_opts& opts)
     return item(lay).proportion(opts.m_proportional).space(opts.m_fixed);
 }
 
+inline item column(item&& it, const layout_opts& opts)
+{
+	return column(std::vector<item>{it}, opts);
+}
+
 //-------------------------------------------------------------------
 
 class row_layout : public layout

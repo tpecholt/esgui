@@ -143,6 +143,20 @@ void ShowKeyboard(int kb)
     env->CallStaticVoidMethod(cls, mid, kb);
 }
 
+int OpenCamera(bool open)
+{
+    JNIEnv* env = GetEnv();
+    if (!env)
+        return 0;
+    jclass cls = env->FindClass("com/tope/esgui/MainActivity");
+    if (!cls)
+        return 0;
+    jmethodID mid = env->GetStaticMethodID(cls, "openCamera", "(Z)I");
+    if (!mid)
+        return 0;
+    return env->CallStaticIntMethod(cls, mid, open);
+}
+
 std::pair<float, float> GetScreenSize()
 {
 	JNIEnv* env = GetEnv();

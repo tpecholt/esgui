@@ -31,6 +31,8 @@ void menu::touch(action act, const point& p)
     float dh = menu_dh();
 	esgui::rect r = m_rect;
 	int idx = int((p.y - r.y) / dh);
+    if (!m_label.empty())
+        --idx;
 	switch (act) {
 		case action::down:
 			if (r.contains(p)) {
@@ -50,12 +52,16 @@ void menu::touch(action act, const point& p)
             m_moving = true;
             break;
 		case action::up: {
-            if (!m_moving && r.contains(p)) {
+            if (m_moving || !r.contains(p)) {
+                visible(false);
+                app::get().overlay(nullptr);
+            }
+            else if (idx >= 0) { //not the label
                 if (m_on_menu)
                     m_on_menu(idx);
+                visible(false);
+                app::get().overlay(nullptr);
             }
-            visible(false);
-            app::get().overlay(nullptr);
             break;
         }
 	}
@@ -81,11 +87,12 @@ float menu::menu_dh() const
 size menu::menu_size()
 {
     float dpmm = app::get().screen_dpi() / 25.4;
-    float w = 0;
+    float w = esguid::MeasureText(m_label, font()).x;
     for (const auto& it : m_items)
         w = std::max(w, esguid::MeasureText(it, font()).x);
     w += 6*dpmm;
-    float h = m_items.size() * menu_dh();
+    size_t n = m_items.size() + (!m_label.empty());
+    float h = n * menu_dh();
     return {w, h};
 }
 
@@ -99,34 +106,45 @@ void menu::refresh()
 	float dh = menu_dh();
 	esgui::rect r = m_rect;
 	
-	if (m_vbos.size() != 2) {
-		m_vbos.resize(2);
+	if (m_vbos.size() != 3) {
+		m_vbos.resize(3);
 		glGenBuffers(1, &m_vbos[0].id);
         glGenBuffers(1, &m_vbos[1].id);
+        glGenBuffers(1, &m_vbos[2].id);
     }
 
     //panels
 	using namespace esguid;
-	std::vector<VertexData> vbo1;
+	std::vector<VertexData> vbo;
     float ro = 1*dpmm;
     float th = 0.15*dpmm;
-    PushRoundRect(vbo1, r.x, r.y, r.w, r.h, ro, ctext);
+    PushRoundRect(vbo, r.x, r.y, r.w, r.h, ro, ctext);
     if (m_highlighted >= 0) {
-        PushRect(vbo1, r.x + th, r.y + th + dh * m_highlighted, r.w - 2*th, dh - 2*th, cselect);
+        PushRect(vbo, r.x + th, r.y + th + dh * m_highlighted, r.w - 2*th, dh - 2*th, cselect);
     }
-    PushRoundRect(vbo1, r.x + th, r.y + th, r.w - 2*th, r.h - 2*th, ro - th, cpanel);
-    m_vbos[0].size = SendBuffer(m_vbos[0].id, vbo1);
+    PushRoundRect(vbo, r.x + th, r.y + th, r.w - 2*th, r.h - 2*th, ro - th, cpanel);
+    m_vbos[0].size = SendBuffer(m_vbos[0].id, vbo);
 
     //labels
-    std::vector<VertexData> vbo2;
+    vbo.clear();
 	esgui::font f = font();
+    esgui::font bf = f.make_bold();
 	float df = MeasureText("test", f).y;
+    float y = r.y;
+    if (!m_label.empty()) {
+        PushText(vbo, r.x + 3 * dpmm, y + (dh - df) / 2, m_label, bf, ctext);
+        y += dh;
+        m_vbos[1].size = SendBuffer(m_vbos[1].id, vbo);
+        m_vbos[1].texture = bf.texture();
+    }
+
+    vbo.clear();
     for (size_t i = 0; i < m_items.size(); ++i)
 	{
-        PushText(vbo2, r.x + 3*dpmm, r.y + i*dh + (dh-df)/2, m_items[i], f, ctext);
+        PushText(vbo, r.x + 3*dpmm, y + i*dh + (dh-df)/2, m_items[i], f, ctext);
 	}
-	m_vbos[1].size = SendBuffer(m_vbos[1].id, vbo2);
-	m_vbos[1].texture = f.texture();
+	m_vbos[2].size = SendBuffer(m_vbos[2].id, vbo);
+	m_vbos[2].texture = f.texture();
 }
 
 }

@@ -3,6 +3,7 @@
 #include "widget.h"
 #include <android/log.h>
 #include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 #define LOGI(...)  __android_log_print(ANDROID_LOG_INFO, "esgui", __VA_ARGS__)
 #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR, "esgui", __VA_ARGS__)

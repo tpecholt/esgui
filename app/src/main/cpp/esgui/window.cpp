@@ -73,13 +73,23 @@ void window::render(const std::vector<int>& programs, const point& scroll)
 			const esgui::rect& s = vbo.scissor;
 			glScissor(s.x, s.y, s.w, s.h);
 		}
-		int prog = programs[vbo.texture ? 1 : 0];
-		glUseProgram(prog);
-		/*int loc = glGetUniformLocation(prog, "mvp");
+		int prog;
+		if (!vbo.texture) {
+			prog = programs[0];
+		}
+		else if (vbo.texture > 0) {
+			prog = programs[1];
+			glBindTexture(GL_TEXTURE_2D, vbo.texture);
+		}
+		else if (vbo.texture < 0) {
+			prog = programs[2];
+			glBindTexture(GL_TEXTURE_EXTERNAL_OES, -vbo.texture);
+		}
+        glUseProgram(prog);
+        /*int loc = glGetUniformLocation(prog, "mvp");
         glUniformMatrix4fv(loc, 1, false, mvp);*/
 		int loc = glGetUniformLocation(prog, "scroll");
 		glUniform2f(loc, vbo.scroll.x + scroll.x, vbo.scroll.y + scroll.y);
-		glBindTexture(GL_TEXTURE_2D, vbo.texture);
 
 		//always use glGetAttribLocation as locations might be different on different platforms
 		glBindBuffer(GL_ARRAY_BUFFER, vbo.id);

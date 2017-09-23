@@ -13,17 +13,22 @@ namespace esgui {
 class edit_text : public widget
 {
 public:
-    enum style {
+    enum input_type {
         all,
         number,
         decimal,
         phone,
         email,
-        password
+        password,
+    };
+    enum style {
+        normal,
+        lowered
     };
     edit_text(container* parent, int id = 0);
-    void style(enum style);
-    enum style style() const { return m_style; }
+    void style(style s);
+    void input_type(enum input_type);
+    enum input_type input_type() const { return m_input_type; }
     void color(const esgui::color& color);
     void text_color(const esgui::color& color);
     void font(const esgui::font& f);
@@ -38,6 +43,7 @@ public:
 
 protected:
     enum style m_style;
+    enum input_type m_input_type;
     std::string m_text;
     std::string m_hint;
     esgui::font m_font;

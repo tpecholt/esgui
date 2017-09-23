@@ -17,6 +17,8 @@ class core
 	static final int FONT_ATLAS_CELL_SIZE = 64;
 	static final int FONT_ATLAS_COLS = 10;
 	static final int FONT_ATLAS_POINT_SIZE = 48;
+
+	static Camera mCamera;
 		
 	public static int[] getScreenSize()
 	{
@@ -103,6 +105,18 @@ class core
 		return ret;
 	}
 
+	public static int createTexture(int target)
+	{
+		int[] hTex = new int[1];
+		GLES20.glGenTextures(1, hTex, 0);
+		GLES20.glBindTexture(target, hTex[0]);
+		GLES20.glTexParameteri(target, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+		GLES20.glTexParameteri(target, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+		GLES20.glTexParameteri(target, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
+		GLES20.glTexParameteri(target, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
+		return hTex[0];
+	}
+
 	public static int[] createTexture(Bitmap bmp)
 	{
 		Matrix matrix = new Matrix();
@@ -110,14 +124,10 @@ class core
 		Bitmap bmp2 = Bitmap.createBitmap(bmp, 0, 0, bmp.getWidth(), bmp.getHeight(), matrix, true);
 
 		int[] hTex = new int[3];
+		hTex[0] = createTexture(GLES20.GL_TEXTURE_2D);
 		hTex[1] = bmp2.getWidth();
 		hTex[2] = bmp2.getHeight();
-		GLES20.glGenTextures(1, hTex, 0);
 		GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, hTex[0]);
-		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
-		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
-		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_REPEAT);
-		GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_REPEAT);
 		GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bmp2, 0);
 		bmp2.recycle();
 		return hTex;

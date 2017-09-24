@@ -77,6 +77,7 @@ app::app()
     m_status_bar_height = 0;
     m_mvp = ortho2d(100, 100);
     m_theme = get_theme("");
+    m_default_font = font{"normal", 10};
 }
 
 void app::init_rendering()
@@ -149,6 +150,12 @@ void app::register_(container* c)
         m_containers.push_back(c);
 }
 
+void app::clear_resources()
+{
+    m_icons.clear();
+    m_fonts.clear();
+}
+
 void app::client_size(size s)
 {
     m_client_size = s;
@@ -191,8 +198,6 @@ void app::theme(const esgui::theme& th)
 
 const font& app::default_font()
 {
-    if (!m_default_font.texture())
-        m_default_font = font("normal", 10);
     return m_default_font;
 }
 
@@ -218,30 +223,35 @@ int app::icon_texture(const std::string &uri, esgui::size &siz)
 	return ico.texture;
 }
 
-int app::font_texture(const std::string& face, int style)
+int app::font_texture(const font& f)
 {
-	auto it = std::find_if(m_fonts.begin(), m_fonts.end(), [&](const decltype(m_fonts)::value_type& data) {
-		return data.second.face == face && data.second.style == style;
-	});
+	auto it = m_fonts.find({f.face(), f.style()});
 	if (it != m_fonts.end())
-		return it->first;	
-	FontData font;
-	bool bold = style & font::bold;
-	bool italic = style & font::italic;
-    bool underline = style & font::underline;
-	int texture = android::CreateFontAtlas(face.c_str(), bold, italic, underline,
-		font.metrics.char_widths.data(), &font.metrics.ascent, &font.metrics.descent);	
-	m_fonts[texture] = font;
-	return texture;
+		return it->second.texture;
+	FontData fd;
+	bool bold = f.style() & font::bold;
+	bool italic = f.style() & font::italic;
+    bool underline = f.style() & font::underline;
+	fd.texture = android::CreateFontAtlas(f.face().c_str(), bold, italic, underline,
+		fd.metrics.char_widths.data(), &fd.metrics.ascent, &fd.metrics.descent);
+	m_fonts[{f.face(), f.style()}] = fd;
+	return fd.texture;
 }
 
 const font_metrics& app::font_metrics(const font& f)
 {
-	static esgui::font_metrics tmp;
-	auto it = m_fonts.find(f.texture());
-	if (it == m_fonts.end())
-		return tmp;
-	return it->second.metrics;
+    auto it = m_fonts.find({f.face(), f.style()});
+    if (it == m_fonts.end()) {
+        FontData fd;
+        bool bold = f.style() & font::bold;
+        bool italic = f.style() & font::italic;
+        bool underline = f.style() & font::underline;
+        fd.texture = android::CreateFontAtlas(f.face().c_str(), bold, italic, underline,
+                                              fd.metrics.char_widths.data(), &fd.metrics.ascent,
+                                              &fd.metrics.descent);
+        it = m_fonts.insert({{f.face(), f.style()}, fd}).first;
+    }
+    return it->second.metrics;
 }
 
 void app::toast(const std::string& msg)
@@ -290,6 +300,8 @@ void app::overlay(window* w)
 
 void app::set_viewport(int width, int height)
 {
+    //LOGE("set_viewport %d %d", width, height);
+    clear_resources();
     check_err();
 	glViewport(0, 0, width, height);
     check_err();

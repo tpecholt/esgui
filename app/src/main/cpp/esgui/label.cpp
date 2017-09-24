@@ -52,6 +52,8 @@ void label::touch(action act, const point& p)
 void label::refresh()
 {
     check_err();
+	/*for (const auto vbo : m_vbos)
+		glDeleteBuffers(1, &vbo.id);*/
 	if (m_vbos.size() != 2) {
 		m_vbos.resize(2);
 		glGenBuffers(1, &m_vbos[0].id);

@@ -29,12 +29,13 @@ public:
 	app();
 	static app& get();
 
+	void clear_resources();
     void register_(container* w);
     void overlay(window* w);
     void focus(edit_text* w);
 	window* focus() const { return m_focus; }
 	int icon_texture(const std::string& uri, esgui::size& siz);
-	int font_texture(const std::string& face, int style);
+	int font_texture(const font& font);
 	const font& default_font();
 	const font_metrics& font_metrics(const font& font);
 	void client_size(size s);
@@ -59,8 +60,7 @@ private:
 
 	struct FontData
 	{
-		std::string face;
-		int style;
+		int texture;
 		esgui::font_metrics metrics;
 	};
 	struct IconData
@@ -73,7 +73,7 @@ private:
     window* m_overlay;
     window* m_focus;
 	font m_default_font;
-	std::map<int, FontData> m_fonts;
+	std::map<std::pair<std::string, int>, FontData> m_fonts;
 	std::map<std::string, IconData> m_icons;
 	std::vector<int> m_programs;
 	matrix4 m_mvp;

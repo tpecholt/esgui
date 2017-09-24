@@ -38,6 +38,10 @@ JNIEXPORT void JNICALL
 Java_com_tope_esgui_MainRenderer_SurfaceCreatedNative(JNIEnv *env,
                                                       jobject instance)
 {
+	static bool done = false;
+	if (done) //display rotation
+		return;
+	done = true;
     init_controls();
 }
 

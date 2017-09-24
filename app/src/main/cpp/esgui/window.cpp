@@ -5,17 +5,12 @@ namespace esgui
 {
 
 font::font()
-	: m_texture(), m_style(), m_point_size()
-{}
-
-font::font(int m_texture, int pointSize)
-	: m_texture(m_texture), m_point_size(pointSize), m_face(), m_style()
+	: m_face("normal"), m_style(), m_point_size()
 {}
 
 font::font(const std::string& face, int pointSize, int style)
 	: m_face(face), m_point_size(pointSize), m_style(style)
 {
-	m_texture = app::get().font_texture(face, style);
 }
 
 font font::make_bold() const
@@ -26,6 +21,11 @@ font font::make_bold() const
 font font::make_underline() const
 {
     return font(m_face, m_point_size, m_style | underline);
+}
+
+int font::texture() const
+{
+    return app::get().font_texture(*this);
 }
 
 //-----------------------------------------------------------------------

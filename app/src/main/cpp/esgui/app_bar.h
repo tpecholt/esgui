@@ -25,7 +25,7 @@ public:
 
     app_bar();
     size min_size();
-    void color(const esgui::color &c);
+    void refresh();
 
     void style(int style);
     container* side_bar() { return (container*)find_child(id_side_bar); }

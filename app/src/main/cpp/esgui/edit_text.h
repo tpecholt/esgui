@@ -23,7 +23,8 @@ public:
     };
     enum style {
         normal,
-        lowered
+        framed,
+        transparent
     };
     edit_text(container* parent, int id = 0);
     void style(style s);

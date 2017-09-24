@@ -19,7 +19,7 @@ public:
 	void color(const esgui::color& color);
 	void text_color(const esgui::color& color);
 	void font(const esgui::font& f);
-	void icon(const std::string& uri, float scale = 1);
+	void icon(const std::string& uri, const esgui::size& siz = {-1, -1});
 	
 	size min_size();
 	void refresh();
@@ -34,8 +34,8 @@ protected:
 	esgui::font m_font;
 	esgui::color m_text_color;
 	esgui::color m_color;
-	int m_texture;
-	esgui::size m_texture_size;
+	std::string m_uri;
+	esgui::size m_img_size;
 	event<void()> m_on_click;
 };
 

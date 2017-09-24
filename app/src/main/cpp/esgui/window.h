@@ -23,6 +23,14 @@ inline point operator- (const point& a, const point& b) {
 	return point(a.x - b.x, a.y - b.y);
 }
 
+inline bool operator== (const point& a, const point& b) {
+	return a.x == b.x && a.y == b.y;
+}
+
+inline bool operator!= (const point& a, const point& b) {
+	return !(a == b);
+}
+
 using size = point;
 
 struct rect
@@ -94,9 +102,8 @@ struct font
 		underline = 0x4,
 	};
 	font();
-	font(int texture, int pointSize);
 	font(const std::string& face, int pointSize, int style = 0);
-	int texture() const { return m_texture; }
+	int texture() const;
 	const std::string& face() const { return m_face; }
 	int point_size() const { return m_point_size; }
 	int style() const { return m_style; }
@@ -104,8 +111,7 @@ struct font
 	font make_underline() const;
 
 private:
-	int m_texture;
-	std::string m_face;
+    std::string m_face;
 	int m_point_size;
 	int m_style;
 };

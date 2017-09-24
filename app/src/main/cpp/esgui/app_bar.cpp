@@ -17,7 +17,6 @@ app_bar::app_bar()
             space(4) | row({}) | space(1)
     ));
     m_color = app::get().theme().app_bar;
-    android::SetDarkStatusBar(m_color.luminance() < 0.3);
 }
 
 size app_bar::min_size()
@@ -31,10 +30,10 @@ size app_bar::min_size()
     return s;
 }
 
-void app_bar::color(const esgui::color &c)
+void app_bar::refresh()
 {
-    container::color(c);
-    android::SetDarkStatusBar(c.luminance() < 0.3);
+    container::refresh();
+    android::SetDarkStatusBar(m_color.luminance() < 0.3);
 }
 
 void app_bar::style(int s)
@@ -57,7 +56,7 @@ void app_bar::style(int s)
         bside = new button(this, id_side_button);
         bside->color(color::transparent);
         bside->text("side");
-        bside->icon("@drawable/ic_menu", 0.75);
+        bside->icon("@drawable/ic_menu");
         bside->on_click([=] {
             side->visible(true);
         });
@@ -67,7 +66,7 @@ void app_bar::style(int s)
         button *back = new button(this, id_back_button);
         back->color(color::transparent);
         back->text("back");
-        back->icon("@drawable/ic_chevron_left", 0.75);
+        back->icon("@drawable/ic_chevron_left");
         lay->push_back(item(back));
     }
 
@@ -85,7 +84,7 @@ void app_bar::style(int s)
         esgui::menu* m = new esgui::menu(this, id_menu);
         button *but = new button(this, menu_button);
         but->color(color::transparent);
-        but->icon("@drawable/ic_more_vert", 0.75);
+        but->icon("@drawable/ic_more_vert", {4*dpmm, 4*dpmm});
         but->text("menu");
         but->on_click([=]{
             m->exec({ but->rect().x, but->rect().y + dpmm });

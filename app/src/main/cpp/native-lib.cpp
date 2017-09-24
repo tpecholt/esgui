@@ -51,7 +51,7 @@ void init_controls()
     app->text("Bingo");
     //app->color({0.8, 0.3, 0.35});
     app->menu()->items({"Search", "Manage calendars", "Settings"});
-    app->menu()->label("Hello");
+    //app->menu()->label("Hello");
     app->on_back([=]{
         page->visible(true);
         preview->visible(false);
@@ -111,7 +111,8 @@ void init_controls()
     std::vector<label*> labs;
     for (size_t i = 0; i < 4; ++i) {
         label* lab = new label(page);
-        //lab->color("black");
+        if (!i)
+            lab->text_color("white");
         //lab->text_color("white");
         lab->font({"normal", 10, font::bold});
         labs.push_back(lab);

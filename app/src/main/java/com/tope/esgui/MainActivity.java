@@ -10,6 +10,7 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.method.DigitsKeyListener;
+import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -32,6 +33,7 @@ public class MainActivity extends Activity {
     protected Resources mRes;
     private EditText mEditView;
     private Camera mCamera;
+    private int mCameraId;
 
     private native void CreateObjectNative();
     private native void DeleteObjectNative();
@@ -227,7 +229,8 @@ public class MainActivity extends Activity {
                     try {
                         if (op) {
                             if (sActivity.mCamera == null) {
-                                sActivity.mCamera = Camera.open();
+                                sActivity.mCameraId = 0;
+                                sActivity.mCamera = Camera.open(sActivity.mCameraId);
                                 sActivity.mCamera.setPreviewTexture(renderer.getTexture());
                                 Camera.Parameters param = sActivity.mCamera.getParameters();
                                 List<Camera.Size> psize = param.getSupportedPreviewSizes();
@@ -238,7 +241,7 @@ public class MainActivity extends Activity {
                                         param.setPreviewSize(psize.get(i).width, psize.get(i).height);
                                     }
                                 }
-                                param.set("orientation", "landscape");
+                                param.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
                                 sActivity.mCamera.setParameters(param);
                             }
                             sActivity.mCamera.startPreview();
@@ -258,4 +261,19 @@ public class MainActivity extends Activity {
         return renderer.getHTex();
     }
 
+    public static int getDisplayRotation() {
+        int rotation = sActivity.getWindowManager().getDefaultDisplay()
+                .getRotation();
+        switch (rotation) {
+            default:
+                return 0;
+            case Surface.ROTATION_90:
+                return 90;
+            case Surface.ROTATION_180:
+                return 180;
+            case Surface.ROTATION_270:
+                return 270;
+        }
+
+    }
 }

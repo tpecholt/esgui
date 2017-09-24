@@ -19,8 +19,6 @@ widget::~widget()
 
 void widget::rect(const esgui::rect& r)
 {
-	if (m_rect == r) //layout optimization
-		return;
 	m_rect = r;
 	refresh();
 }

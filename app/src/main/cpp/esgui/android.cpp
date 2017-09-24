@@ -175,6 +175,20 @@ std::pair<float, float> GetScreenSize()
 	return ret;
 }
 
+int GetDisplayRotation()
+{
+    JNIEnv* env = GetEnv();
+    if (!env)
+        return {};
+    jclass cls = env->FindClass("com/tope/esgui/MainActivity");
+    if (!cls)
+        return {};
+    jmethodID mid = env->GetStaticMethodID(cls, "getDisplayRotation", "()I");
+    if (!mid)
+        return {};
+    return env->CallStaticIntMethod(cls, mid);
+}
+
 int GetDPI()
 {
 	JNIEnv* env = GetEnv();

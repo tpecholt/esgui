@@ -10,6 +10,8 @@ int LoadTexture(const char* folder, const char* name, float& w, float& h);
 
 std::pair<float, float> GetScreenSize();
 
+int GetDisplayRotation();
+
 int GetDPI();
 
 int GetStatusBarHeight();

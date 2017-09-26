@@ -165,8 +165,9 @@ void init_controls()
     std::vector<edit_text*> edits;
     for (int i = 0; i < 3; ++i)
         edits.push_back(new edit_text(page));
-    edits[0]->hint("Name");
+    edits[0]->hint("Search");
     edits[0]->text("Tomas p");
+    edits[0]->style(edit_text::search);
     edits[1]->hint("Job title");
     label* org = new label(page);
     org->text("Organization");
@@ -174,6 +175,14 @@ void init_controls()
     edits[2]->input_type(edit_text::number);
 
     camera_preview* prw = new camera_preview(preview);
+    button* capture = new button(preview);
+    capture->icon("@mipmap/ic_star");
+    capture->color("yellow");
+    capture->on_click([=]{
+        app::get().toast("click!");
+    });
+    preview->action_button(capture);
+
     button* scan = new button(page);
     scan->text("SCAN BUSINESS CARD");
     scan->font({"normal", 9});

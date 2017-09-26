@@ -73,9 +73,9 @@ void menu::press(int code)
     app::get().overlay(nullptr);
 }
 
-const esgui::font& menu::font() const
+esgui::font menu::font() const
 {
-    return app::get().default_font();
+    return app::get().theme().ftext;
 }
 
 float menu::menu_dh() const

@@ -1,8 +1,11 @@
 #pragma once
 #include "window.h"
+#include "button.h"
 #include "layout.h"
 
 namespace esgui {
+
+class button;
 
 class container : public window
 {
@@ -21,6 +24,8 @@ public:
 	window* find_child(int id);
     void delete_children();
 	void ensure_visible(window* w);
+	void action_button(esgui::button* but);
+	esgui::button* action_button() const { return m_action_button; }
 
     void touch(action act, const point& p);
 	void register_(window* w);
@@ -30,6 +35,7 @@ public:
 protected:
 	esgui::layout* m_layout;
 	std::vector<window*> m_children;
+	esgui::button* m_action_button;
 	esgui::color m_color;
 	esgui::point m_scroll;
 	esgui::point m_last_p;

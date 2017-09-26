@@ -23,7 +23,7 @@ public:
     };
     enum style {
         normal,
-        framed,
+        search,
         transparent
     };
     edit_text(container* parent, int id = 0);
@@ -32,7 +32,9 @@ public:
     enum input_type input_type() const { return m_input_type; }
     void color(const esgui::color& color);
     void text_color(const esgui::color& color);
+    esgui::color text_color() const;
     void font(const esgui::font& f);
+    esgui::font font() const;
     void text(const std::string& l);
     void hint(const std::string& l);
 

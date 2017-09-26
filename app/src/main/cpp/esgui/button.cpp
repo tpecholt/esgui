@@ -8,7 +8,7 @@ namespace esgui
 button::button(container* cont, int id)
 	: widget(cont, id), m_style(flat)
 {
-	m_font = app::get().default_font();
+    m_font = app::get().theme().ftext;
     m_text_color = app::get().theme().button_text;
 }
 

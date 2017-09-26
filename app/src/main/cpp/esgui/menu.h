@@ -9,7 +9,7 @@ class menu : public widget
 public:
 	menu(container*, int id = 0);
 
-	const esgui::font& font() const;
+	esgui::font font() const;
 	template <class C>
 	void items(const C& items)
 	{

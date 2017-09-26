@@ -5,7 +5,7 @@
 namespace esgui {
 
 container::container(container* parent, int id)
-	: window(id), m_layout()
+	: window(id), m_layout(), m_action_button()
 {
 	m_layout = new row_layout({});
     m_color = app::get().theme().background;
@@ -52,6 +52,14 @@ void container::delete_children()
 void container::rect(const esgui::rect& r)
 {
 	m_layout->rect(r);
+
+    if (m_action_button) {
+        esgui::rect r = rect(); //might get modified by layout
+        esgui::size siz = m_action_button->min_size();
+        float dpmm = app::get().screen_dpi() / 25.4;
+        float margin = 4 * dpmm;
+        m_action_button->rect({r.x + r.w - siz.x - margin, r.y + r.h - siz.y - margin, siz.x, siz.y});
+    }
     refresh();
 }
 
@@ -59,6 +67,13 @@ void container::color(const esgui::color& c)
 {
     m_color = c;
     refresh();
+}
+
+void container::action_button(esgui::button* but)
+{
+    m_action_button = but;
+    if (m_action_button)
+        m_action_button->style(button::round);
 }
 
 void container::ensure_visible(window *w)
@@ -129,7 +144,11 @@ void container::render(const std::vector<int>& programs, const point& scroll)
     window::render(programs, scroll);
 
     for (window* w : m_children)
-        w->render(programs, scroll + m_scroll);
+        if (w != m_action_button)
+            w->render(programs, scroll + m_scroll);
+
+    if (m_action_button)
+        m_action_button->render(programs, scroll);
 }
 
 void container::touch(action act, const point& pp)
@@ -162,13 +181,19 @@ void container::touch(action act, const point& pp)
                 return;
             break;
     }
-    p.x -= m_scroll.x;
-    p.y -= m_scroll.y;
 
-    for (window *w : m_children) {
-        if (w->visible() && w->rect().contains(p)) {
-            w->touch(act, p);
-            break;
+    if (m_action_button &&
+        m_action_button->visible() && m_action_button->rect().contains(p)) {
+        m_action_button->touch(act, p);
+    }
+    else {
+        p.x -= m_scroll.x;
+        p.y -= m_scroll.y;
+        for (window *w : m_children) {
+            if (w->visible() && w->rect().contains(p)) {
+                w->touch(act, p);
+                break;
+            }
         }
     }
 }

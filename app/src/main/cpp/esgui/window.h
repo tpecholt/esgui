@@ -31,6 +31,11 @@ inline bool operator!= (const point& a, const point& b) {
 	return !(a == b);
 }
 
+inline point& operator*= (point& a, float f) {
+    a.x *= f; a.y *= f;
+    return a;
+}
+
 using size = point;
 
 struct rect
@@ -94,6 +99,14 @@ struct color
     }
 };
 
+inline bool operator== (const color& a, const color& b) {
+    return a.r == b.r && a.b == b.b && a.g == b.g && a.a == b.a;
+}
+
+inline bool operator!= (const color& a, const color& b) {
+    return !(a == b);
+}
+
 struct font
 {
 	enum {
@@ -103,6 +116,7 @@ struct font
 	};
 	font();
 	font(const std::string& face, int pointSize, int style = 0);
+    bool invalid() const { return !m_point_size; }
 	int texture() const;
 	const std::string& face() const { return m_face; }
 	int point_size() const { return m_point_size; }
@@ -143,7 +157,7 @@ public:
 	virtual void color(const esgui::color& color) {}
 	virtual esgui::color color() const { return esgui::color(); }
 	virtual void font(const esgui::font& f) {}
-	virtual const esgui::font& font() const { static esgui::font f; return f; }
+	virtual esgui::font font() const { return {}; }
 
 	virtual size min_size() { return size(0, 0); }
 	virtual void refresh() {}

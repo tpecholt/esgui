@@ -18,6 +18,8 @@ struct theme {
     color edit_text;
     color focus;
     color disabled;
+    font ftext;
+    font fsmall_text;
 };
 
 theme get_theme(const std::string& name);

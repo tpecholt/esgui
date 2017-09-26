@@ -7,7 +7,7 @@ namespace esgui
 label::label(container* cont, int id)
 	: widget(cont, id)
 {
-	m_font = app::get().default_font();
+	m_font = app::get().theme().ftext;
     m_text_color = app::get().theme().text;
     m_color = color::transparent;
     m_alignment = left | top;

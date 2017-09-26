@@ -77,7 +77,6 @@ app::app()
     m_status_bar_height = 0;
     m_mvp = ortho2d(100, 100);
     m_theme = get_theme("");
-    m_default_font = font{"normal", 10};
 }
 
 void app::init_rendering()
@@ -194,11 +193,6 @@ void app::theme(const esgui::theme& th)
         m_app_bar->refresh();
     for (container* c : m_containers)
         c->refresh();
-}
-
-const font& app::default_font()
-{
-    return m_default_font;
 }
 
 int app::icon_texture(const std::string &uri, esgui::size &siz)

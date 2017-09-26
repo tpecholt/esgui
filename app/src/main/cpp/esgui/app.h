@@ -36,7 +36,6 @@ public:
 	window* focus() const { return m_focus; }
 	int icon_texture(const std::string& uri, esgui::size& siz);
 	int font_texture(const font& font);
-	const font& default_font();
 	const font_metrics& font_metrics(const font& font);
 	void client_size(size s);
 	size client_size() const { return m_client_size; }
@@ -72,7 +71,6 @@ private:
     app_bar* m_app_bar;
     window* m_overlay;
     window* m_focus;
-	font m_default_font;
 	std::map<std::pair<std::string, int>, FontData> m_fonts;
 	std::map<std::string, IconData> m_icons;
 	std::vector<int> m_programs;

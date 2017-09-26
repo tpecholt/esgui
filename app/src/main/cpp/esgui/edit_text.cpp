@@ -14,9 +14,8 @@ edit_text::edit_text(container* cont, int id)
 {
     m_input_type = all;
     m_style = normal;
-    m_font = app::get().default_font();
     m_color = color::transparent;
-    m_text_color = app::get().theme().edit_text;
+    m_text_color = color::transparent;
 }
 
 void edit_text::style(enum style s)
@@ -43,6 +42,16 @@ void edit_text::text_color(const esgui::color& c)
     refresh();
 }
 
+esgui::color edit_text::text_color() const
+{
+    if (m_text_color != color::transparent)
+        return m_text_color;
+    if (m_style == normal)
+        return app::get().theme().edit_text;
+    else
+        return app::get().theme().button_text;
+}
+
 void edit_text::font(const esgui::font& f)
 {
     m_font = f;
@@ -61,11 +70,29 @@ void edit_text::hint(const std::string& l)
     refresh();
 }
 
+esgui::font edit_text::font() const
+{
+    if (!m_font.invalid())
+        return m_font;
+    if (m_style == normal)
+        return app::get().theme().ftext;
+    else
+        return app::get().theme().fsmall_text;
+}
+
 void edit_text::touch(action act, const point& p) {
-    esgui::rect r = m_rect;
+    esgui::rect r = rect();
+    float dpmm = app::get().screen_dpi() / 25.4;
     if (act == action::up) {
         if (m_rect.contains(p)) {
-            m_sel = esguid::TextPos(m_text, m_font, p.x - r.x);
+            if (m_style == search && !m_text.empty() && p.x >= r.x + r.w - r.h) {
+                m_sel = 0;
+                m_text.clear();
+            }
+            else {
+                float margin = m_style == search ? 1.5*dpmm : 0;
+                m_sel = esguid::TextPos(m_text, font(), p.x - r.x - margin);
+            }
             m_tp = app::get().now();
             app::get().focus(this);
             refresh();
@@ -98,49 +125,88 @@ void edit_text::press(int key)
 void edit_text::refresh()
 {
     bool focused = app::get().focus() == this;
-    const esgui::color cline = focused ?
-                               app::get().theme().focus : app::get().theme().disabled;
+    const auto& theme = app::get().theme();
+    const esgui::color cline = focused ? theme.focus : theme.disabled;
+    const esgui::color ctext = m_text.empty() ? theme.disabled : text_color();
+    const esgui::font fo = font();
 
     float dpmm = app::get().screen_dpi() / 25.4;
     check_err();
-    if (m_vbos.size() != 3) {
-        m_vbos.resize(3);
+    if (m_vbos.size() != 5) {
+        m_vbos.resize(5);
         glGenBuffers(1, &m_vbos[0].id);
         glGenBuffers(1, &m_vbos[1].id);
         glGenBuffers(1, &m_vbos[2].id);
+        glGenBuffers(1, &m_vbos[3].id);
+        glGenBuffers(1, &m_vbos[4].id);
     }
 
     using namespace esguid;
     esgui::rect r = rect();
     float th = (focused ? 0.25 : 0.15) * dpmm;
-    std::vector<VertexData> vbo1;
-    PushRect(vbo1, r.x, r.y, r.w, r.h, m_color);
-    PushRect(vbo1, r.x, r.y + r.h - th, r.w, th, cline);
-    m_vbos[0].size = SendBuffer(m_vbos[0].id, vbo1);
-
-    std::vector<VertexData> vbo2;
-    if (focused) {
-        size s = esguid::MeasureText(m_text.substr(0, m_sel), m_font);
-        PushRect(vbo2, r.x + s.x, r.y + dpmm, 0.3*dpmm, r.h - 2*dpmm, cline);
+    float rd = 0.8 * dpmm;
+    float margin = 0;
+    if (m_style == search)
+        margin = m_text.empty() ? dpmm : 1.5*dpmm;
+    //frame
+    std::vector<VertexData> vbo;
+    if (m_style == normal) {
+        PushRect(vbo, r.x, r.y, r.w, r.h, m_color);
+        PushRect(vbo, r.x, r.y + r.h - th, r.w, th, cline);
     }
-    m_vbos[1].size = SendBuffer(m_vbos[1].id, vbo2);
+    else if (m_style == search) {
+        PushRoundRect(vbo, r.x, r.y, r.w, r.h, rd, "white");
+    }
+    m_vbos[0].size = SendBuffer(m_vbos[0].id, vbo);
+
+    //cursor
+    vbo.clear();
+    if (focused) {
+        size s = esguid::MeasureText(m_text.substr(0, m_sel), fo);
+        PushRect(vbo, r.x + margin + s.x, r.y + dpmm, 0.3*dpmm, r.h - 2*dpmm, cline);
+    }
+    m_vbos[3].size = SendBuffer(m_vbos[3].id, vbo);
     //m_vbos[1].scissor = m_rect;
 
-    std::vector<VertexData> vbo3;
+    //icons
+    m_vbos[1].size = m_vbos[2].size = 0;
+    if (m_style == search) {
+        esgui::size siz;
+        if (m_text.empty()) {
+            vbo.clear();
+            m_vbos[1].texture = app::get().icon_texture("@drawable/ic_search", siz);
+            siz *= 0.8;
+            PushRect(vbo, r.x + dpmm, r.y + (r.h - siz.y) / 2, siz.x, siz.y, "white");
+            m_vbos[1].size = SendBuffer(m_vbos[1].id, vbo);
+            margin += siz.x;
+        }
+        else {
+            vbo.clear();
+            m_vbos[2].texture = app::get().icon_texture("@drawable/ic_clear", siz);
+            siz *= 0.8;
+            PushRect(vbo, r.x + r.w - rd - siz.x, r.y + (r.h - siz.y) / 2, siz.x, siz.y, "white");
+            m_vbos[2].size = SendBuffer(m_vbos[2].id, vbo);
+        }
+    }
+
+    //text
+    vbo.clear();
+    float marginy = m_style == search ? 1.1*dpmm : dpmm;
     if (!m_text.empty()) {
-        PushText(vbo3, r.x, r.y + dpmm, m_text, m_font, m_text_color);
+        PushText(vbo, r.x + margin, r.y + marginy, m_text, fo, ctext);
     }
     else {
-        PushText(vbo3, r.x, r.y + dpmm, m_hint, m_font, app::get().theme().disabled);
+        PushText(vbo, r.x + margin, r.y + marginy, m_hint, fo, ctext);
     }
-    m_vbos[2].size = SendBuffer(m_vbos[2].id, vbo3);
-    m_vbos[2].texture = m_font.texture();
+    m_vbos[4].size = SendBuffer(m_vbos[4].id, vbo);
+    m_vbos[4].texture = fo.texture();
+
 }
 
 size edit_text::min_size()
 {
     float dpmm = app::get().screen_dpi() / 25.4;
-    float h = esguid::MeasureText("Test", m_font).y;
+    float h = esguid::MeasureText("Test", app::get().theme().ftext).y;
     h += 2*dpmm;
     return { 20*dpmm, h };
 }
@@ -152,7 +218,7 @@ void edit_text::animate(std::chrono::system_clock::time_point tp)
         return;
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(tp - m_tp).count();
     bool show = (ms % 1000) < 500;
-    m_vbos[1].scroll.y = show ? 0 : m_rect.y;
+    m_vbos[3].scroll.y = show ? 0 : m_rect.y;
 }
 
 }

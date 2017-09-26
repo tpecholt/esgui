@@ -19,6 +19,8 @@ theme get_theme(const std::string& name)
         th.edit_text = {1, 0.83, 0.52};
         th.disabled = {0.5, 0.46, 0.39};
         th.focus = th.app_bar;
+        th.ftext = font("normal", 10);
+        th.fsmall_text = font("normal", 9);
     }
     return th;
 }

@@ -5,7 +5,7 @@ namespace esgui
 {
 
 font::font()
-	: m_face("normal"), m_style(), m_point_size()
+	: m_style(), m_point_size()
 {}
 
 font::font(const std::string& face, int pointSize, int style)

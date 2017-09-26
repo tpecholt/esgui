@@ -14,7 +14,7 @@ public:
 	void color(const esgui::color& color);
     esgui::color color() const { return m_color; }
 	void font(const esgui::font& f);
-    const esgui::font& font() const { return m_font; };
+    esgui::font font() const { return m_font; };
 	void  text_color(const esgui::color& color);
 	void alignment(int align);
 

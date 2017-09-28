@@ -74,7 +74,7 @@ app::app()
 	: m_app_bar(), m_overlay(), m_focus()
 {
     m_dpi = 0;
-    m_status_bar_height = 0;
+    m_status_bar_h = 0;
     m_mvp = ortho2d(100, 100);
     m_theme = get_theme("");
 }
@@ -145,14 +145,22 @@ void app::register_(container* c)
 {
     if (c->id() == app_bar::sid)
         m_app_bar = (app_bar*)c;
-    else
+    else {
+        c->visible(m_containers.empty());
         m_containers.push_back(c);
+    }
 }
 
 void app::clear_resources()
 {
     m_icons.clear();
     m_fonts.clear();
+}
+
+void app::activate(container * cont)
+{
+    for (container* c : m_containers)
+        c->visible(c == cont);
 }
 
 void app::client_size(size s)
@@ -166,8 +174,10 @@ void app::client_size(size s)
         r.y += m_app_bar->rect().h;
         r.h -= m_app_bar->rect().h;
     }
-    for (container* c : m_containers)
-		c->rect(r);
+    for (container* c : m_containers) {
+        c->rect(r);
+        c->shrink();
+    }
 }
 
 size app::screen_size()
@@ -253,11 +263,11 @@ void app::toast(const std::string& msg)
     android::ToastMessage(msg.c_str());
 }
 
-int app::status_bar_height()
+int app::status_bar_h()
 {
-    if (!m_status_bar_height)
-        m_status_bar_height = android::GetStatusBarHeight();
-    return m_status_bar_height;
+    if (!m_status_bar_h)
+        m_status_bar_h = android::GetStatusBarHeight();
+    return m_status_bar_h;
 }
 
 void app::focus(edit_text* w)
@@ -289,7 +299,13 @@ void app::focus(edit_text* w)
 void app::overlay(window* w)
 {
     m_overlay = w;
-    if (w) android::ShowKeyboard(0);
+    if (w) {
+        android::ShowKeyboard(0);
+        window* last = m_focus;
+        m_focus = nullptr;
+        if (last)
+            last->refresh();
+    }
 }
 
 void app::set_viewport(int width, int height)
@@ -369,15 +385,22 @@ void app::touch(action act, float x, float y)
 
 void app::press(int key)
 {
-    if (m_focus) {
-        for (container* c : m_containers) {
-            if (c->visible())
-                c->ensure_visible(m_focus);
+    container* cont = nullptr;
+    for (container* c : m_containers) {
+        if (c->visible()) {
+            cont = c;
+            break;
         }
+    }
+    if (m_focus && key != 0x1b) {
+        if (cont)
+            cont->ensure_visible(m_focus);
         m_focus->press(key);
     }
     if (m_overlay)
         m_overlay->press(key);
+    else
+        cont->on_back();
 }
 
 }

@@ -88,7 +88,7 @@ public:
     {
         layout(l).proportion(opts.m_proportional).space(opts.m_fixed);
     }
-    operator layout* () const { return layout(); }
+    operator esgui::layout* () const { return layout(); }
 	
 	item& space(float s) { m_space = s; return *this; }
 	float space() const { return m_space;  }
@@ -98,7 +98,6 @@ public:
 	esgui::window* window() const { return m_window; }
 	item& layout(esgui::layout* l) { m_layout = l; return *this; }
 	esgui::layout* layout() const { return m_layout; }
-	item& min_size(esgui::size s) { m_min_size = s; return *this; }
 
 	bool visible() const;
 	esgui::size min_size(bool horiz) const;
@@ -109,7 +108,6 @@ private:
 	esgui::window* m_window;
 	float m_prop; //based on all proportions/spaces in a layout
 	float m_space; //based on dpi
-	esgui::size m_min_size;
 };
 
 inline item stretch(float p = 1.0)
@@ -155,7 +153,7 @@ public:
 	using iterator = std::vector<item>::iterator;
 
 	layout()
-		: m_visible(true), m_hmargin(), m_vmargin(), m_sep()
+		: m_hmargin(), m_vmargin(), m_sep()
 	{}
 	layout(std::vector<item>&& items)
 		: layout()
@@ -173,20 +171,17 @@ public:
 	void insert(iterator it, item&& i) { m_items.insert(it, std::move(i)); }
 	void erase(iterator it) { m_items.erase(it); }
 
-	void visible(bool v) { m_visible = v; }
-	bool visible() const { return m_visible; }
 	void rect(const esgui::rect& r);
-	const esgui::rect& rect() const { return m_rect; }
+    const esgui::rect& rect() const { return m_rect; }
 	void hmargin(float m);
     void vmargin(float m);
 	void separation(float m);
-	virtual esgui::size min_size() const = 0;
+    virtual esgui::size min_size() const = 0;
 	virtual void refresh() = 0;
 
 protected:
 	std::vector<item> m_items;
 	esgui::rect m_rect;	
-	bool m_visible;
 	float m_hmargin, m_vmargin, m_sep;
 };
 

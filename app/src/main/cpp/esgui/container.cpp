@@ -51,15 +51,24 @@ void container::delete_children()
 
 void container::rect(const esgui::rect& r)
 {
+    m_rect = r;
 	m_layout->rect(r);
 
     if (m_action_button) {
-        esgui::rect r = rect(); //might get modified by layout
+        esgui::rect r = rect();
         esgui::size siz = m_action_button->min_size();
         float dpmm = app::get().screen_dpi() / 25.4;
         float margin = 4 * dpmm;
         m_action_button->rect({r.x + r.w - siz.x - margin, r.y + r.h - siz.y - margin, siz.x, siz.y});
     }
+    refresh();
+}
+
+void container::shrink()
+{
+    esgui::rect r = m_layout->rect();
+    m_rect.w = std::min(m_rect.w, r.w);
+    m_rect.h = std::min(m_rect.h, r.h);
     refresh();
 }
 

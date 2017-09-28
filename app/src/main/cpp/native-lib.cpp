@@ -44,17 +44,19 @@ void init_controls()
 {
     container *page = new container;
     container* preview = new container;
-    preview->visible(false);
+
+    preview->on_back([=]{
+        app::get().activate(page);
+    });
 
     app_bar* app = new app_bar;
-    app->style(app_bar::back_button | app_bar::menu_button);
+    app->style(app_bar::back_button | app_bar::menu_button | app_bar::right_side_bar);
     app->text("Bingo");
     //app->color({0.8, 0.3, 0.35});
     app->menu()->items({"Search", "Manage calendars", "Settings"});
     //app->menu()->label("Hello");
     app->on_back([=]{
-        page->visible(true);
-        preview->visible(false);
+        app::get().activate(page);
     });
     app->on_menu([](int idx){ app::get().toast("menu " + to_string(idx)); });
 

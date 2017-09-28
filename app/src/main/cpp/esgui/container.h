@@ -14,7 +14,8 @@ public:
 	virtual ~container();
 
 	void rect(const esgui::rect& r);
-	const esgui::rect& rect() const { return m_layout->rect(); }
+	const esgui::rect& rect() const { return m_rect; }
+    void shrink();
 	void layout(esgui::layout* l);
 	esgui::layout* layout() { return m_layout; }
     esgui::size min_size() { return m_layout->min_size(); }
@@ -32,14 +33,20 @@ public:
 	void render(const std::vector<int>& programs, const point& scroll = point{});
 	void refresh();
 
+    template <class T>
+    void on_back(T&& fun) { m_on_back = std::forward<T>(fun); }
+    void on_back() { if (m_on_back) m_on_back(); }
+
 protected:
 	esgui::layout* m_layout;
+    esgui::rect m_rect;
 	std::vector<window*> m_children;
 	esgui::button* m_action_button;
 	esgui::color m_color;
 	esgui::point m_scroll;
 	esgui::point m_last_p;
 	bool m_moving;
+    event<void()> m_on_back;
 };
 
 }

@@ -10,6 +10,33 @@
 
 namespace esgui {
 
+class side_panel : public container
+{
+public:
+    using container::container;
+
+    void touch(action act, const point& p)
+    {
+        esgui::rect r = rect();
+        if (!r.contains(p)) {
+            app::get().overlay(nullptr);
+            visible(false);
+        }
+        else {
+            container::touch(act, p);
+        }
+    }
+    void press(int key)
+    {
+        if (key == 0x1b) {
+            app::get().overlay(nullptr);
+            visible(false);
+        }
+    }
+};
+
+//-----------------------------------------------------------
+
 app_bar::app_bar()
 : container(nullptr, sid)
 {
@@ -51,14 +78,20 @@ void app_bar::style(int s)
 
     button *bside = nullptr;
     if (m_style & (left_side_bar | right_side_bar)) {
-        container* side = new container(this, id_side_bar);
+        container* side = new side_panel(this, id_side_bar);
         side->visible(false);
+        side->layout(column({}));
         bside = new button(this, id_side_button);
         bside->color(color::transparent);
         bside->text("side");
-        bside->icon("@drawable/ic_menu");
+        bside->icon("@drawable/ic_menu", {4*dpmm, 4*dpmm});
         bside->on_click([=] {
+            size client = app::get().client_size();
+            float w = 0.7 * std::min(client.x, client.y);
+            float h = client.y - app::get().status_bar_h();
+            side->rect({client.x - w, client.y - h, w, h});
             side->visible(true);
+            app::get().overlay(side);
         });
     }
 

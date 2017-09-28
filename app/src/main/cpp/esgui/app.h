@@ -31,6 +31,7 @@ public:
 
 	void clear_resources();
     void register_(container* w);
+    void activate(container *);
     void overlay(window* w);
     void focus(edit_text* w);
 	window* focus() const { return m_focus; }
@@ -42,7 +43,7 @@ public:
 	size screen_size();
 	int screen_dpi();
 	void toast(const std::string& msg);
-    int status_bar_height();
+    int status_bar_h();
     void theme(const esgui::theme& t);
     const esgui::theme& theme() const { return m_theme; }
     std::chrono::system_clock::time_point now() const { return m_now; }
@@ -79,7 +80,7 @@ private:
 	size m_client_size;
     int m_kbd_h;
 	int m_dpi;
-    int m_status_bar_height;
+    int m_status_bar_h;
     esgui::theme m_theme;
     std::chrono::system_clock::time_point m_now;
 };

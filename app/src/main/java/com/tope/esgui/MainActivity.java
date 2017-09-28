@@ -199,13 +199,15 @@ public class MainActivity extends Activity {
     public boolean dispatchKeyEvent(KeyEvent KEvent)
     {
         int keyaction = KEvent.getAction();
-
-        if(keyaction == KeyEvent.ACTION_DOWN)
+        int keycode = KEvent.getKeyCode();
+        if (keyaction == KeyEvent.ACTION_DOWN &&
+                keycode != KeyEvent.KEYCODE_BACK)
         {
-            int keycode = KEvent.getKeyCode();
             int keyunicode = KEvent.getUnicodeChar(KEvent.getMetaState() );
             if (keycode == KeyEvent.KEYCODE_DEL)
                 keyunicode = 0x8;
+            //else if (keycode == KeyEvent.KEYCODE_BACK)
+                //keyunicode = 0x1b; handled by onBackPressed in more reliable way
             final int uni = keyunicode;
             sActivity.mView.queueEvent(new Runnable() {
                 @Override
@@ -214,7 +216,6 @@ public class MainActivity extends Activity {
                 }
             });
         }
-
         return super.dispatchKeyEvent(KEvent);
     }
 

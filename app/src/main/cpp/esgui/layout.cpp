@@ -8,8 +8,6 @@ bool item::visible() const
 {
 	if (window())
 		return window()->visible();
-	else if (layout())
-		return layout()->visible();
 	return true;
 }
 
@@ -31,12 +29,6 @@ esgui::size item::min_size(bool horiz) const
 		siz = window()->min_size();
 	else if (layout())
 		siz = layout()->min_size();
-
-    if (m_min_size.x)
-		siz.x = m_min_size.x;
-	if (m_min_size.y)
-		siz.y = m_min_size.y;
-	
 	return siz;
 }
 
@@ -100,7 +92,7 @@ void row_layout::refresh()
 	int n = 0;
 	for (const item& i : m_items)
 	{
-		if (!visible())
+		if (!i.visible())
 			continue;
 		sum_prop += i.proportion();
         float w = i.min_size(true).x;
